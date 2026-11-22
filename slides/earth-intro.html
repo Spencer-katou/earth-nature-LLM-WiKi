@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>認識我們的星球：地球與自然入門</title>
+<style>
+:root {
+  color-scheme: dark;
+  --ink: #f3f6f8;
+  --ink-2: #c9d6e2;
+  --muted: #93a7b9;
+  --glass: rgba(6, 24, 44, .64);
+  --glass-hi: rgba(12, 40, 70, .72);
+  --line: rgba(255, 255, 255, .14);
+  --accent: #8fd0ff;   /* 淺藍 */
+  --green: #5fd39f;    /* 綠 */
+  --deep: #06182c;     /* 深藍 */
+  /* 圖表與圈層色：參考調色盤的深色模式階 */
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s7: #9085e9; --ice: #86b6ef;
+  --grid: rgba(255, 255, 255, .12);
+  --axis: rgba(255, 255, 255, .34);
+  --topH: 66px; --botH: 78px; --tocW: 236px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #020a16; color: var(--ink); overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif; }
+button { font: inherit; color: inherit; }
+.en, .serif { font-family: Georgia, "Times New Roman", serif; }
+
+/* ================= 背景場景 ================= */
+#bgs { position: fixed; inset: 0; z-index: 0; }
+.bg { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 1.3s ease, visibility 0s 1.3s; }
+.bg.on { opacity: 1; visibility: visible; transition: opacity 1.3s ease; }
+.bg svg { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 62% 48%; }
+.bg.on svg { animation: kenburns 28s ease-out both; }
+.bg:not(.on) * { animation-play-state: paused !important; }
+.bg::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(2,12,26,.84) 0%, rgba(2,12,26,.64) 48%, rgba(2,12,26,.5) 100%); transition: opacity 1s; }
+body.is-cover .bg::after { background: linear-gradient(90deg, rgba(2,12,26,.8) 0%, rgba(2,12,26,.35) 55%, rgba(2,12,26,.1) 100%); }
+@keyframes kenburns { from { transform: scale(1.14); } to { transform: scale(1.02); } }
+.drift { animation: drift var(--dur, 70s) ease-in-out infinite alternate; }
+@keyframes drift { from { transform: translateX(-50px); } to { transform: translateX(70px); } }
+.ray { transform-box: fill-box; transform-origin: 50% 0; animation: sway 10s ease-in-out infinite alternate; }
+@keyframes sway { from { transform: skewX(-6deg); opacity: .5; } to { transform: skewX(6deg); opacity: 1; } }
+.bub { animation: bub linear infinite; }
+@keyframes bub { from { transform: translateY(0); opacity: 0; } 10% { opacity: .7; } to { transform: translateY(-980px); opacity: 0; } }
+.snow { animation: snow linear infinite; }
+@keyframes snow { from { transform: translate(0, -40px); } to { transform: translate(60px, 960px); } }
+.twinkle { animation: twinkle 3.5s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: .15; } to { opacity: .9; } }
+.school { animation: swim 46s linear infinite; }
+@keyframes swim { from { transform: translateX(-320px); } to { transform: translateX(1900px); } }
+.current { stroke-dasharray: 18 26; animation: flowdash 3s linear infinite; }
+@keyframes flowdash { to { stroke-dashoffset: -88; } }
+
+/* ================= 上方列 ================= */
+#top { position: fixed; left: 0; right: 0; top: 0; height: var(--topH); z-index: 20; display: flex; align-items: center; gap: 22px;
+  padding: 0 24px; background: linear-gradient(180deg, rgba(2,10,22,.9), rgba(2,10,22,0)); }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 15px; letter-spacing: .1em; white-space: nowrap; }
+.globe { width: 24px; height: 24px; border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 35% 30%, #bfe6ff, #2f80d6 45%, #0b2e5a 80%); box-shadow: 0 0 12px rgba(143,208,255,.55); }
+.where { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; width: 300px; flex: none; }
+.where .ch { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; letter-spacing: .2em; color: var(--green); text-transform: uppercase; }
+.where .tt { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#segs { flex: 1; display: flex; gap: 5px; min-width: 120px; }
+#segs .seg { all: unset; flex: var(--n); height: 6px; border-radius: 3px; background: rgba(255,255,255,.16); overflow: hidden; cursor: pointer; }
+#segs .seg:hover { background: rgba(255,255,255,.3); }
+#segs .seg i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .6s ease; }
+#count { font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+#count b { color: var(--ink); font-size: 18px; }
+#tocBtn { display: none; border: 1px solid var(--line); background: var(--glass); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+
+/* ================= 右側章節導覽 ================= */
+#toc { position: fixed; right: 0; top: var(--topH); bottom: var(--botH); width: var(--tocW); z-index: 15; padding: 10px 18px 10px 6px; overflow-y: auto; }
+#toc h4 { margin: 0 0 10px 14px; font-size: 12px; letter-spacing: .24em; color: var(--muted); font-weight: 600; }
+#toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+#toc .chb { all: unset; box-sizing: border-box; width: 100%; display: flex; gap: 10px; align-items: baseline; padding: 8px 12px 8px 14px;
+  cursor: pointer; color: var(--muted); font-size: 15px; position: relative; transition: color .2s; }
+#toc .chb:hover { color: var(--ink); }
+#toc .chb .no { font-size: 12px; min-width: 18px; }
+#toc li.on > .chb { color: var(--ink); font-weight: 700; }
+#toc li.on > .chb::before { content: ""; position: absolute; left: -2px; top: 7px; bottom: 7px; width: 3px; border-radius: 2px; background: var(--green); }
+#toc .subs { list-style: none; margin: 0 0 6px; padding: 0 0 0 42px; max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+#toc li.on .subs { max-height: 220px; }
+#toc .sb { all: unset; cursor: pointer; display: block; font-size: 13px; color: var(--muted); padding: 3px 0; }
+#toc .sb:hover { color: var(--ink); }
+#toc .sb.on { color: var(--accent); font-weight: 600; }
+#toc .sb.on::before { content: "● "; font-size: 9px; vertical-align: 2px; }
+#toc button:focus-visible, .navbtn:focus-visible, .wc-step:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ================= 下方列 ================= */
+#bottom { position: fixed; left: 0; right: 0; bottom: 0; height: var(--botH); z-index: 20; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; padding: 0 24px; background: linear-gradient(0deg, rgba(2,10,22,.9), rgba(2,10,22,0)); }
+.navbtn { display: flex; align-items: center; gap: 12px; max-width: 36vw; border: 1px solid var(--line); background: var(--glass);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 999px; padding: 7px 20px 7px 8px; cursor: pointer;
+  transition: border-color .2s, background .2s; text-align: left; }
+.navbtn.next { flex-direction: row-reverse; padding: 7px 8px 7px 20px; text-align: right; }
+.navbtn:hover:not(:disabled) { border-color: rgba(143,208,255,.5); background: var(--glass-hi); }
+.navbtn:disabled { opacity: .3; cursor: default; }
+.navbtn .arrow { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; font-size: 20px;
+  background: linear-gradient(135deg, rgba(143,208,255,.3), rgba(95,211,159,.3)); }
+.navbtn small { display: block; font-size: 11px; letter-spacing: .14em; color: var(--muted); }
+.navbtn .t { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.navbtn > span:last-child { min-width: 0; }
+#keys { font-size: 12px; color: var(--muted); text-align: center; }
+kbd { display: inline-block; min-width: 20px; padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); font: inherit; font-size: 11px; color: var(--ink-2); }
+
+/* ================= 章節切換動畫 ================= */
+#flash { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; pointer-events: none; opacity: 0; }
+#flash.go { animation: flash 1.6s ease both; }
+#flash .box { text-align: center; }
+#flash small { display: block; font-size: 15px; letter-spacing: .45em; color: var(--green); text-transform: uppercase; }
+#flash b { display: block; font-size: 68px; font-weight: 900; letter-spacing: .12em; margin-top: 10px; text-shadow: 0 6px 40px rgba(0,0,0,.6); }
+#flash .bar { width: 320px; height: 2px; margin: 18px auto 0; background: linear-gradient(90deg, transparent, var(--accent), var(--green), transparent); transform: scaleX(0); }
+#flash.go .box { animation: flashBox 1.6s cubic-bezier(.2,.7,.2,1) both; }
+#flash.go .bar { animation: flashBar 1.6s ease both; }
+@keyframes flash { 0% { opacity: 0; background: rgba(2,10,22,0); } 14%, 62% { opacity: 1; background: rgba(2,10,22,.6); } 100% { opacity: 0; background: rgba(2,10,22,0); } }
+@keyframes flashBox { 0% { transform: scale(1.18); } 30% { transform: scale(1); } 100% { transform: scale(.96); } }
+@keyframes flashBar { 0% { transform: scaleX(0); } 45% { transform: scaleX(1); } 100% { transform: scaleX(1); } }
+
+/* ================= 投影片舞台 ================= */
+#stage { position: fixed; top: var(--topH); bottom: var(--botH); left: 0; right: var(--tocW); z-index: 10; }
+#deck { position: absolute; left: 50%; top: 50%; width: 1200px; height: 660px; transform: translate(-50%, -50%) scale(var(--scale, 1)); }
+.slide { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 0 8px 30px; visibility: hidden; opacity: 0;
+  transition: opacity .45s ease, visibility 0s .45s; }
+.slide.active { visibility: visible; opacity: 1; transition: opacity .45s ease; }
+.slide .rv { opacity: 0; }
+.slide.active .rv { animation: rise .85s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 75ms + var(--d0, 120ms)); }
+@keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ---------- 文字 ---------- */
+.kicker { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font-size: 16px; font-weight: 700; letter-spacing: .12em; color: var(--green); }
+.kicker::before { content: ""; width: 38px; height: 2px; background: var(--green); }
+.kicker .en { font-style: italic; font-weight: 400; letter-spacing: .06em; color: var(--accent); }
+h1 { font-size: 96px; line-height: 1.06; margin: 0 0 22px; font-weight: 900; letter-spacing: .05em; text-shadow: 0 4px 36px rgba(0,0,0,.55); }
+h2 { font-size: 46px; line-height: 1.18; margin: 0 0 20px; font-weight: 800; letter-spacing: .02em; text-shadow: 0 2px 20px rgba(0,0,0,.5); }
+h3 { font-size: 22px; margin: 0 0 8px; color: var(--ink); }
+p, li { font-size: 21px; line-height: 1.6; color: var(--ink-2); }
+p { margin: 0 0 12px; }
+b, strong { color: var(--ink); }
+ul, ol { margin: 0; padding-left: 1.2em; }
+li { margin: 3px 0; }
+.lead { font-size: 24px; line-height: 1.6; color: var(--ink-2); margin: 0 0 20px; max-width: 1000px; }
+.small { font-size: 16px; line-height: 1.55; color: var(--muted); }
+.src { position: absolute; left: 8px; right: 8px; bottom: 0; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.src::before { content: "📖 "; }
+
+/* ---------- 版面與卡片 ---------- */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1; min-height: 0; }
+.split.wl { grid-template-columns: 4fr 3fr; }
+.split.wr { grid-template-columns: 3fr 4fr; }
+.col { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.g5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.card { background: var(--glass); border: 1px solid var(--line); border-radius: 16px; padding: 18px 22px;
+  backdrop-filter: blur(12px) saturate(1.15); -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  box-shadow: 0 12px 34px rgba(0,0,0,.28); transition: translate .25s ease, border-color .25s ease; }
+.card:hover { translate: 0 -3px; border-color: rgba(143,208,255,.38); }
+.card p { font-size: 19px; line-height: 1.55; margin: 6px 0 0; }
+.card li { font-size: 19px; }
+.stat { display: flex; flex-direction: column; gap: 6px; }
+.stat .num { font-size: 54px; font-weight: 800; line-height: 1; color: #fff; letter-spacing: .01em; }
+.stat .num small { font-size: 24px; font-weight: 700; margin-left: 4px; color: var(--accent); }
+.stat .lbl { font-size: 17px; line-height: 1.45; color: var(--ink-2); }
+.remember { margin-top: auto; padding: 13px 20px; border-radius: 12px; font-size: 21px; color: var(--ink);
+  background: rgba(95,211,159,.13); border-left: 4px solid var(--green); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.remember::before { content: "一句話記住　"; font-weight: 800; color: var(--green); }
+.analogy { padding: 12px 18px; border-radius: 12px; font-size: 18px; line-height: 1.55; color: var(--ink-2);
+  background: rgba(143,208,255,.1); border: 1px dashed rgba(143,208,255,.4); }
+.analogy::before { content: "生活比喻　"; font-weight: 800; color: var(--accent); }
+.flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.flow .node { padding: 8px 13px; border-radius: 10px; background: rgba(143,208,255,.12); border: 1px solid rgba(143,208,255,.25); font-size: 17px; font-weight: 600; color: var(--ink); }
+.flow .arr { color: var(--accent); font-size: 17px; }
+
+/* ---------- 封面 ---------- */
+.slide.cover { justify-content: center; padding-bottom: 40px; }
+.chips { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 34px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: 999px; font-size: 17px; font-weight: 600;
+  background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.chip i { width: 11px; height: 11px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
+.cta-row { display: flex; align-items: center; gap: 22px; }
+.cta { border: 0; cursor: pointer; padding: 14px 30px; border-radius: 999px; font-size: 19px; font-weight: 800; color: #032038;
+  background: linear-gradient(135deg, var(--accent), var(--green)); box-shadow: 0 10px 30px rgba(95,211,159,.3); transition: translate .2s, box-shadow .2s; }
+.cta:hover { translate: 0 -2px; box-shadow: 0 14px 36px rgba(95,211,159,.45); }
+
+/* ---------- 五大圈層 ---------- */
+.sphere { border-top: 6px solid var(--c); padding: 18px 16px; }
+.sphere h3 { font-size: 24px; margin: 0 0 2px; }
+.sphere .en { font-size: 14px; font-style: italic; color: var(--muted); margin-bottom: 10px; }
+.sphere p { font-size: 17px; margin: 0; }
+
+/* ---------- 大氣分層 ---------- */
+.layers { display: flex; flex-direction: column-reverse; gap: 6px; flex: 1; }
+.layer { flex: 1; display: grid; grid-template-columns: 110px 130px 1fr; align-items: center; padding: 6px 16px; border-radius: 10px;
+  background: rgba(144,133,233,var(--a)); border: 1px solid rgba(144,133,233,.35); font-size: 18px; color: var(--ink);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.layer b { font-size: 20px; }
+.layer span { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.up-label { font-size: 14px; color: var(--muted); margin: 0 0 6px; }
+
+/* ---------- 時間軸 ---------- */
+.timeline { position: relative; margin: 26px 0 6px; padding-top: 10px; }
+.timeline .bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.18); position: relative; }
+.timeline .fill { position: absolute; inset: 0; border-radius: 3px; transform-origin: left; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--ice) 0%, var(--ice) 55%, var(--s2) 66%, var(--ice) 78%, var(--s2) 92%); }
+.slide.active .timeline .fill { animation: growx 1.8s .5s cubic-bezier(.3,.6,.2,1) both; }
+@keyframes growx { to { transform: scaleX(1); } }
+.timeline .ev { position: absolute; top: -10px; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; background: var(--deep);
+  border: 5px solid var(--ice); transform: scale(0); }
+.timeline .ev.warm { border-color: var(--s2); }
+.slide.active .timeline .ev { animation: pop .5s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(.6s + var(--k) * .32s); }
+@keyframes pop { to { transform: scale(1); } }
+.tl-labels { position: relative; height: 150px; margin-top: 20px; }
+.tl-labels div { position: absolute; width: 170px; margin-left: -85px; text-align: center; font-size: 16px; line-height: 1.4; color: var(--ink-2); }
+.tl-labels div.last { left: auto !important; right: 0; margin-left: 0; width: 150px; text-align: right; }
+.tl-labels div b { display: block; font-size: 18px; color: var(--ink); }
+
+/* ---------- 圖表 ---------- */
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: inherit; }
+.tick { font-size: 13px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.dlabel { font-size: 15px; font-weight: 700; fill: var(--ink); }
+.dlabel2 { font-size: 13px; fill: var(--ink-2); }
+.gx, .gy { transform-box: fill-box; transform-origin: left center; }
+.gy { transform-origin: center bottom; }
+.slide.active .gx { animation: gx 1.1s cubic-bezier(.3,.6,.2,1) both; animation-delay: calc(.45s + var(--k, 0) * .15s); }
+.slide.active .gy { animation: gy 1.1s cubic-bezier(.3,.6,.2,1) both; animation-delay: calc(.45s + var(--k, 0) * .15s); }
+@keyframes gx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes gy { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.slide.active .draw { animation: draw 1.6s .5s ease both; }
+@keyframes draw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
+.tip { position: absolute; z-index: 5; pointer-events: none; padding: 8px 12px; border-radius: 9px; font-size: 15px; line-height: 1.45; white-space: nowrap;
+  background: #0b2038; color: var(--ink); border: 1px solid rgba(143,208,255,.35); box-shadow: 0 8px 22px rgba(0,0,0,.4); opacity: 0; transition: opacity .12s; }
+.tip b { font-variant-numeric: tabular-nums; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 15px; color: var(--ink-2); margin: 2px 0 8px; }
+.legend i { display: inline-block; width: 13px; height: 13px; border-radius: 4px; margin-right: 6px; vertical-align: -1px; }
+details.table { margin-top: 6px; font-size: 15px; color: var(--ink-2); }
+details.table summary { cursor: pointer; color: var(--accent); }
+details.table table { border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
+details.table td, details.table th { padding: 2px 14px 2px 0; text-align: left; font-size: 14px; }
+
+/* ---------- 互動水循環 ---------- */
+.wc { display: grid; grid-template-columns: 1.5fr 1fr; gap: 22px; flex: 1; min-height: 0; }
+.wc-scene { padding: 0; overflow: hidden; position: relative; }
+.wc-scene svg { display: block; width: 100%; height: 100%; }
+.wc-side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.wc-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.wc-step { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 12px;
+  background: var(--glass); border: 1px solid var(--line); font-size: 18px; font-weight: 700; color: var(--ink-2); transition: all .25s; }
+.wc-step:hover { border-color: rgba(143,208,255,.5); color: var(--ink); }
+.wc-step .n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; font-size: 14px; background: rgba(255,255,255,.1); transition: all .25s; }
+.wc-step.done .n { background: var(--green); color: #04261a; }
+.wc-step.on { border-color: var(--accent); color: #fff; background: rgba(57,135,229,.32); box-shadow: 0 0 0 3px rgba(143,208,255,.15); }
+.wc-step.on .n { background: var(--accent); color: #032038; }
+.wc-info { flex: 1; min-height: 0; }
+.wc-info h3 { font-size: 24px; margin-bottom: 6px; }
+.wc-info p { font-size: 18px; }
+.wc-info .fact { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: 16px; line-height: 1.5; color: var(--ink); background: rgba(95,211,159,.12); border-left: 3px solid var(--green); }
+.wc-info .fact::before { content: "你知道嗎？　"; font-weight: 800; color: var(--green); }
+.wc-info.swap { animation: swap .45s ease both; }
+@keyframes swap { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.wc-ctrl { display: flex; gap: 10px; }
+.wc-ctrl button { cursor: pointer; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); font-size: 15px; font-weight: 600; }
+.wc-ctrl button:hover { border-color: rgba(143,208,255,.5); }
+#wcSvg .lab { opacity: 0; transition: opacity .6s; }
+#wcSvg .lab text { font-size: 17px; font-weight: 800; fill: #fff; paint-order: stroke; stroke: rgba(3,20,40,.8); stroke-width: 4px; }
+#wcSvg .lab .heat { font-size: 13px; fill: #ffd27a; }
+#wcSvg.on1 .lab1, #wcSvg.on2 .lab2, #wcSvg.on3 .lab3, #wcSvg.on4 .lab4 { opacity: 1; }
+#wcSvg .vap { opacity: 0; }
+#wcSvg.cur1 .vap { animation: vap 2.6s ease-in infinite; animation-delay: var(--dl); }
+@keyframes vap { 0% { opacity: 0; transform: translateY(0); } 25% { opacity: .9; } 100% { opacity: 0; transform: translateY(-150px); } }
+#wcSvg .cloud { opacity: .14; transform-box: fill-box; transform-origin: center; transform: scale(.7); transition: opacity 1.2s, transform 1.2s; }
+#wcSvg .cloud ellipse { transition: fill 1s; }
+#wcSvg.on2 .cloud { opacity: 1; transform: scale(1); }
+#wcSvg.on3 .cloud ellipse { fill: #aebfd2; }
+#wcSvg .drop { opacity: 0; }
+#wcSvg.cur2 .drop { animation: gather 1.8s ease-in infinite; animation-delay: var(--dl); }
+@keyframes gather { 0% { opacity: 0; transform: translate(var(--dx), var(--dy)); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(0, 0); } }
+#wcSvg .rain { opacity: 0; }
+#wcSvg.cur3 .rain { animation: rain .9s linear infinite; animation-delay: var(--dl); }
+@keyframes rain { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: .9; } 100% { opacity: 0; transform: translateY(150px); } }
+#wcSvg .flowline { opacity: 0; stroke-dasharray: 10 14; transition: opacity .6s; }
+#wcSvg.on4 .flowline { opacity: 1; }
+#wcSvg.cur4 .flowline { animation: wcdash 1.1s linear infinite; }
+@keyframes wcdash { to { stroke-dashoffset: -48; } }
+#wcSvg .inf { opacity: 0; }
+#wcSvg.cur4 .inf { animation: inf 1.8s ease-in infinite; animation-delay: var(--dl); }
+@keyframes inf { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(60px); } }
+#wcSvg .sunglow { animation: twinkle 2.5s ease-in-out infinite alternate; }
+
+/* ---------- 課後練習 ---------- */
+.quiz { display: flex; flex-direction: column; gap: 10px; }
+.quiz details { background: var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 12px 20px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: border-color .2s; }
+.quiz details[open] { border-color: rgba(95,211,159,.5); }
+.quiz summary { cursor: pointer; font-size: 21px; font-weight: 700; color: var(--ink); list-style: none; display: flex; gap: 12px; align-items: baseline; }
+.quiz summary::-webkit-details-marker { display: none; }
+.quiz summary .q { color: var(--accent); font-size: 18px; min-width: 26px; }
+.quiz summary::after { content: "看提示 ▾"; margin-left: auto; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.quiz details[open] summary::after { content: "收起 ▴"; }
+.quiz details p { margin: 8px 0 2px 38px; font-size: 17px; color: var(--green); }
+
+/* ---------- 窄螢幕 ---------- */
+@media (max-width: 1100px) {
+  :root { --tocW: 0px; }
+  #toc { display: none; width: 260px; background: rgba(2,10,22,.94); border-left: 1px solid var(--line); }
+  body.toc-open #toc { display: block; }
+  #tocBtn { display: inline-block; }
+  .where { width: auto; flex: 1; }
+  #segs { display: none; }
+  #keys { display: none; }
+}
+
+/* ---------- 減少動態 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .slide .rv { opacity: 1; }
+  .timeline .fill, .timeline .ev { transform: none; }
+  #flash { display: none; }
+}
+
+/* ---------- 列印 ---------- */
+@media print {
+  html, body { overflow: visible; height: auto; background: #06182c; }
+  #bgs, #top, #toc, #bottom, #flash { display: none; }
+  #stage { position: static; }
+  #deck { position: static; transform: none !important; width: auto; height: auto; }
+  .slide { position: relative; visibility: visible !important; opacity: 1 !important; width: 1280px; height: 720px; padding: 40px 48px 50px;
+    page-break-after: always; background: linear-gradient(135deg, #0a2a4a, #06182c); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide .rv { opacity: 1 !important; animation: none !important; }
+  .src { left: 48px; bottom: 20px; }
+  @page { size: 1280px 720px; margin: 0; }
+}
+</style>
+</head>
+<body class="is-cover">
+
+<!-- ================= 背景場景（全部以 SVG 繪製，離線可用） ================= -->
+<div id="bgs" aria-hidden="true">
+
+  <!-- 0 太空中的地球 -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <radialGradient id="sp-bg" cx="25%" cy="15%" r="95%"><stop offset="0" stop-color="#0e2a5a"/><stop offset=".55" stop-color="#051230"/><stop offset="1" stop-color="#010612"/></radialGradient>
+      <radialGradient id="sp-pl" cx="30%" cy="22%" r="85%"><stop offset="0" stop-color="#4b9be6"/><stop offset=".45" stop-color="#1557a8"/><stop offset="1" stop-color="#03142c"/></radialGradient>
+      <radialGradient id="sp-gl" cx="50%" cy="50%" r="50%"><stop offset=".9" stop-color="#8fd0ff" stop-opacity=".55"/><stop offset="1" stop-color="#8fd0ff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="sp-sh" x1="0" y1="0" x2="1" y2="1"><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".75"/></linearGradient>
+      <clipPath id="sp-clip"><circle cx="1250" cy="1150" r="760"/></clipPath>
+      <filter id="sp-blur"><feGaussianBlur stdDeviation="7"/></filter>
+    </defs>
+    <rect width="1600" height="900" fill="url(#sp-bg)"/>
+    <g class="stars" data-n="260"></g>
+    <circle cx="1250" cy="1150" r="800" fill="url(#sp-gl)"/>
+    <circle cx="1250" cy="1150" r="760" fill="url(#sp-pl)"/>
+    <g clip-path="url(#sp-clip)">
+      <g fill="#2f8a5a" opacity=".82">
+        <path d="M820 640 C 870 560, 1000 540, 1060 590 S 1120 720, 1020 740 S 860 720, 820 640Z"/>
+        <path d="M1150 470 C 1240 430, 1370 450, 1400 510 S 1330 610, 1240 600 S 1110 520, 1150 470Z"/>
+        <path d="M1290 690 C 1370 650, 1480 680, 1510 750 S 1430 860, 1340 840 S 1250 750, 1290 690Z"/>
+        <path d="M600 820 C 650 780, 740 790, 760 840 S 700 900, 640 890Z"/>
+      </g>
+      <g class="drift" style="--dur:90s" fill="none" stroke="#fff" stroke-linecap="round" opacity=".55" filter="url(#sp-blur)">
+        <path d="M640 700 C 760 640, 880 700, 1000 650" stroke-width="16"/>
+        <path d="M900 500 C 1000 460, 1120 520, 1260 470" stroke-width="12"/>
+        <path d="M1080 800 C 1200 760, 1330 820, 1480 770" stroke-width="18"/>
+        <path d="M1300 600 C 1380 580, 1460 610, 1560 590" stroke-width="10"/>
+      </g>
+      <rect x="400" y="380" width="1300" height="600" fill="url(#sp-sh)"/>
+    </g>
+  </svg></div>
+
+  <!-- 1 層層山脈 -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="mt-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#061a36"/><stop offset=".45" stop-color="#12406b"/><stop offset=".72" stop-color="#4f86a8"/><stop offset="1" stop-color="#9cc7d6"/></linearGradient>
+      <radialGradient id="mt-sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e6f6ff" stop-opacity=".7"/><stop offset="1" stop-color="#e6f6ff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="mt-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe8f2" stop-opacity="0"/><stop offset="1" stop-color="#cfe8f2" stop-opacity=".22"/></linearGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#mt-sky)"/>
+    <circle cx="1180" cy="470" r="300" fill="url(#mt-sun)"/>
+    <path d="M0 600 L120 540 L230 575 L360 470 L470 530 L590 450 L720 520 L860 430 L980 500 L1100 440 L1240 520 L1360 460 L1480 510 L1600 470 V900 H0Z" fill="#3e6f8f"/>
+    <g fill="#e9f5fb" opacity=".85">
+      <path d="M860 430 L832 452 L846 449 L858 458 L870 448 L888 454Z"/>
+      <path d="M590 450 L566 468 L579 466 L590 474 L601 465 L616 470Z"/>
+      <path d="M1100 440 L1076 458 L1090 455 L1101 463 L1112 454 L1126 459Z"/>
+      <path d="M360 470 L338 488 L350 485 L361 492 L372 484 L384 488Z"/>
+    </g>
+    <rect y="480" width="1600" height="140" fill="url(#mt-mist)"/>
+    <path d="M0 680 L150 590 L260 640 L420 540 L560 640 L700 570 L830 650 L980 560 L1120 660 L1260 590 L1420 660 L1600 590 V900 H0Z" fill="#24506f"/>
+    <rect y="580" width="1600" height="120" fill="url(#mt-mist)"/>
+    <path d="M0 760 L180 650 L330 720 L480 640 L640 740 L820 660 L1000 760 L1180 670 L1360 750 L1600 680 V900 H0Z" fill="#12334d"/>
+    <path d="M0 840 L220 760 L420 820 L640 770 L860 850 L1100 780 L1340 840 L1600 790 V900 H0Z" fill="#071a2b"/>
+  </svg></div>
+
+  <!-- 2 天空與海洋 -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="sk-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c3a72"/><stop offset=".5" stop-color="#2c78c0"/><stop offset=".68" stop-color="#9fd0f0"/></linearGradient>
+      <linearGradient id="sk-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d6fae"/><stop offset="1" stop-color="#05264a"/></linearGradient>
+      <radialGradient id="sk-sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fffbe6"/><stop offset=".25" stop-color="#fff3c4" stop-opacity=".8"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></radialGradient>
+      <filter id="sk-soft"><feGaussianBlur stdDeviation="3"/></filter>
+      <g id="sk-cloud"><ellipse cx="0" cy="0" rx="120" ry="42"/><ellipse cx="-85" cy="12" rx="80" ry="32"/><ellipse cx="95" cy="12" rx="92" ry="30"/><ellipse cx="15" cy="-32" rx="72" ry="46"/><ellipse cx="-40" cy="-18" rx="50" ry="34"/></g>
+    </defs>
+    <rect width="1600" height="900" fill="url(#sk-sky)"/>
+    <circle cx="1300" cy="210" r="210" fill="url(#sk-sun)"/>
+    <g fill="#fff" filter="url(#sk-soft)">
+      <g class="drift" style="--dur:70s" opacity=".95"><use href="#sk-cloud" transform="translate(980 300) scale(1.3)"/></g>
+      <g class="drift" style="--dur:95s" opacity=".85"><use href="#sk-cloud" transform="translate(420 200) scale(1)"/></g>
+      <g class="drift" style="--dur:80s" opacity=".75"><use href="#sk-cloud" transform="translate(1420 430) scale(.8)"/></g>
+      <g class="drift" style="--dur:110s" opacity=".6"><use href="#sk-cloud" transform="translate(160 430) scale(.7)"/></g>
+      <g class="drift" style="--dur:60s" opacity=".7"><use href="#sk-cloud" transform="translate(700 480) scale(.55)"/></g>
+    </g>
+    <rect y="610" width="1600" height="290" fill="url(#sk-sea)"/>
+    <g fill="none" stroke="#fff" stroke-linecap="round" opacity=".18">
+      <path d="M80 660 q30 -8 60 0 t60 0" stroke-width="3"/><path d="M420 700 q40 -10 80 0 t80 0" stroke-width="3"/>
+      <path d="M900 650 q30 -8 60 0 t60 0" stroke-width="3"/><path d="M1200 740 q50 -12 100 0 t100 0" stroke-width="4"/>
+      <path d="M260 800 q50 -12 100 0 t100 0" stroke-width="4"/><path d="M760 830 q60 -14 120 0 t120 0" stroke-width="5"/>
+      <path d="M1350 640 q30 -8 60 0 t60 0" stroke-width="3"/>
+    </g>
+    <rect y="608" width="1600" height="6" fill="#d8f0ff" opacity=".35"/>
+  </svg></div>
+
+  <!-- 3 森林（由程式產生山丘與樹） -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="fo-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a2630"/><stop offset=".5" stop-color="#2f6467"/><stop offset=".85" stop-color="#a6c9b9"/></linearGradient>
+      <radialGradient id="fo-sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f2fbe9" stop-opacity=".75"/><stop offset="1" stop-color="#f2fbe9" stop-opacity="0"/></radialGradient>
+      <linearGradient id="fo-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8ece2" stop-opacity="0"/><stop offset="1" stop-color="#d8ece2" stop-opacity=".25"/></linearGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#fo-sky)"/>
+    <circle cx="1150" cy="400" r="320" fill="url(#fo-sun)"/>
+    <g class="forest"></g>
+  </svg></div>
+
+  <!-- 4 深海 -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="dp-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1673b0"/><stop offset=".32" stop-color="#0a3f73"/><stop offset=".72" stop-color="#031a36"/><stop offset="1" stop-color="#010a18"/></linearGradient>
+      <linearGradient id="dp-ray" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfefff" stop-opacity=".22"/><stop offset="1" stop-color="#cfefff" stop-opacity="0"/></linearGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#dp-sea)"/>
+    <g fill="url(#dp-ray)">
+      <path class="ray" d="M380 0 L520 0 L760 900 L420 900Z"/>
+      <path class="ray" style="animation-duration:13s" d="M760 0 L840 0 L1020 900 L800 900Z"/>
+      <path class="ray" style="animation-duration:11s" d="M1100 0 L1240 0 L1440 900 L1130 900Z"/>
+      <path class="ray" style="animation-duration:15s" d="M1420 0 L1480 0 L1600 700 L1450 700Z"/>
+    </g>
+    <path d="M0 18 q40 -10 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0" fill="none" stroke="#bfe6ff" stroke-width="3" opacity=".3"/>
+    <g fill="none" stroke="#8fd0ff" stroke-linecap="round" opacity=".28">
+      <path class="current" d="M-50 520 C 300 430, 600 620, 900 520 S 1400 420, 1700 520" stroke-width="3"/>
+      <path class="current" style="animation-duration:4s" d="M-50 640 C 260 560, 640 720, 1000 640 S 1450 560, 1700 640" stroke-width="2.5"/>
+      <path class="current" style="animation-duration:5s" d="M-50 400 C 340 340, 700 470, 1050 400 S 1450 330, 1700 400" stroke-width="2"/>
+    </g>
+    <g class="bubbles" data-n="40" data-col="#cfefff"></g>
+  </svg></div>
+
+  <!-- 5 冰川與冰山 -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="ic-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a2747"/><stop offset=".55" stop-color="#3d76a6"/><stop offset=".72" stop-color="#bfe0f0"/></linearGradient>
+      <linearGradient id="ic-mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4fbff"/><stop offset="1" stop-color="#9cc4dd"/></linearGradient>
+      <linearGradient id="ic-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#174d74"/><stop offset="1" stop-color="#03182c"/></linearGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#ic-sky)"/>
+    <path d="M0 650 L120 500 L230 570 L380 380 L520 540 L660 430 L820 600 L960 470 L1100 590 L1240 450 L1400 600 L1600 520 V650Z" fill="url(#ic-mtn)"/>
+    <g fill="#7fa9c8" opacity=".55">
+      <path d="M380 380 L420 650 L520 540Z"/><path d="M660 430 L700 650 L820 600Z"/><path d="M960 470 L990 650 L1100 590Z"/>
+      <path d="M1240 450 L1280 650 L1400 600Z"/><path d="M120 500 L150 650 L230 570Z"/>
+    </g>
+    <rect y="645" width="1600" height="255" fill="url(#ic-sea)"/>
+    <path d="M940 812 L1270 812 L1230 900 L980 900Z" fill="#5ea6cc" opacity=".22"/>
+    <path d="M930 650 L1280 650 L1240 820 L1090 880 L980 790Z" fill="#6bb3d8" opacity=".28"/>
+    <path d="M960 652 L1030 560 L1090 590 L1140 520 L1220 600 L1260 652Z" fill="#f2faff"/>
+    <path d="M1140 520 L1160 652 L1260 652 L1220 600Z" fill="#b9d8ea"/>
+    <g fill="#e7f4fb" opacity=".85">
+      <path d="M300 700 L380 696 L372 708 L296 710Z"/><path d="M520 760 L640 754 L630 770 L512 772Z"/>
+      <path d="M1380 720 L1470 716 L1462 728 L1376 730Z"/><path d="M160 820 L260 814 L254 830 L152 832Z"/>
+    </g>
+    <rect y="644" width="1600" height="4" fill="#e6f6ff" opacity=".5"/>
+    <g class="snowfall" data-n="70"></g>
+  </svg></div>
+
+  <!-- 6 珊瑚礁 -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="rf-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2bb5c6"/><stop offset=".38" stop-color="#0f7d9c"/><stop offset=".78" stop-color="#06435f"/><stop offset="1" stop-color="#032a40"/></linearGradient>
+      <linearGradient id="rf-ray" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8fffb" stop-opacity=".28"/><stop offset="1" stop-color="#e8fffb" stop-opacity="0"/></linearGradient>
+      <g id="rf-fish"><ellipse cx="0" cy="0" rx="16" ry="7"/><path d="M-14 0 L-26 -8 L-26 8Z"/></g>
+    </defs>
+    <rect width="1600" height="900" fill="url(#rf-sea)"/>
+    <g fill="url(#rf-ray)">
+      <path class="ray" d="M520 0 L640 0 L840 820 L560 820Z"/>
+      <path class="ray" style="animation-duration:12s" d="M980 0 L1060 0 L1220 820 L1010 820Z"/>
+      <path class="ray" style="animation-duration:14s" d="M1300 0 L1420 0 L1600 760 L1330 760Z"/>
+    </g>
+    <g fill="none" stroke="#e8fffb" opacity=".18" stroke-width="3">
+      <path d="M0 26 q50 -14 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0"/>
+    </g>
+    <g fill="#ffd27a" opacity=".75"><g class="school"><use href="#rf-fish" x="0" y="300"/><use href="#rf-fish" x="44" y="318"/><use href="#rf-fish" x="20" y="340"/><use href="#rf-fish" x="70" y="296"/><use href="#rf-fish" x="-30" y="326"/></g></g>
+    <g fill="#9fe3ff" opacity=".55"><g class="school" style="animation-duration:62s;animation-delay:-20s"><use href="#rf-fish" x="0" y="520" transform="scale(.8)"/><use href="#rf-fish" x="40" y="540" transform="scale(.8)"/><use href="#rf-fish" x="16" y="560" transform="scale(.8)"/></g></g>
+    <path d="M0 800 Q 400 770 800 795 T 1600 785 V900 H0Z" fill="#7d7558" opacity=".85"/>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1180 830 V720 M1180 765 L1140 705 L1130 665 M1180 742 L1222 682 L1236 642 M1140 705 L1108 694 M1222 682 L1258 676" stroke="#d9765c" stroke-width="15" opacity=".88"/>
+      <path d="M300 832 V762 M300 784 L270 738 M300 772 L332 722 L342 692 M270 738 L254 708" stroke="#c96a85" stroke-width="11" opacity=".7"/>
+      <path d="M1510 832 V742 M1510 772 L1478 722 M1510 760 L1542 700 M1478 722 L1470 690" stroke="#4fae8c" stroke-width="13" opacity=".82"/>
+      <path d="M560 830 V790 M560 806 L540 780 M560 800 L582 770" stroke="#4fae8c" stroke-width="9" opacity=".6"/>
+    </g>
+    <ellipse cx="1350" cy="818" rx="96" ry="56" fill="#b98b4e" opacity=".88"/>
+    <g fill="none" stroke="#8a6534" stroke-width="5" opacity=".8"><path d="M1280 812 q20 -26 44 -6 t44 -6 t44 6"/><path d="M1290 836 q24 -18 50 -2 t50 -4"/><path d="M1300 790 q20 -14 40 -2 t40 0"/></g>
+    <path d="M990 832 L990 790 M990 798 C 930 770, 928 690, 990 668 C 1052 690, 1050 770, 990 798Z" fill="#b5546f" stroke="#b5546f" stroke-width="4" opacity=".72"/>
+    <g stroke="#e9a3b9" stroke-width="2" opacity=".5" fill="none"><path d="M990 796 L960 720"/><path d="M990 796 L990 680"/><path d="M990 796 L1020 720"/></g>
+    <ellipse cx="820" cy="826" rx="60" ry="26" fill="#a5864a" opacity=".6"/>
+    <g class="bubbles" data-n="22" data-col="#e8fffb"></g>
+  </svg></div>
+
+  <!-- 7 黎明的島嶼與黑潮 -->
+  <div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="is-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#081f3c"/><stop offset=".45" stop-color="#1d5986"/><stop offset=".66" stop-color="#7db6cc"/><stop offset=".72" stop-color="#d9efe9"/></linearGradient>
+      <linearGradient id="is-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#145b86"/><stop offset="1" stop-color="#021327"/></linearGradient>
+      <radialGradient id="is-sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fffbea" stop-opacity=".9"/><stop offset="1" stop-color="#fffbea" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#is-sky)"/>
+    <circle cx="520" cy="650" r="260" fill="url(#is-sun)"/>
+    <g fill="#fff" opacity=".35"><g class="drift" style="--dur:100s"><use href="#sk-cloud" transform="translate(1250 260) scale(.9)"/><use href="#sk-cloud" transform="translate(300 330) scale(.6)"/></g></g>
+    <rect y="648" width="1600" height="252" fill="url(#is-sea)"/>
+    <path d="M760 650 C 820 628, 880 590, 940 552 L 990 500 L1030 528 L1080 458 L1130 505 L1172 476 L1236 540 C 1300 590, 1400 630, 1520 650Z" fill="#1d5a46"/>
+    <path d="M840 650 C 900 636, 960 616, 1020 600 L1070 582 L1120 600 C 1180 616, 1260 636, 1340 650Z" fill="#123d31"/>
+    <path d="M760 650 C 820 664, 880 690, 940 712 L 1080 760 L1236 728 C 1300 700, 1400 668, 1520 650Z" fill="#1d5a46" opacity=".25"/>
+    <g fill="none" stroke-linecap="round">
+      <path d="M1600 900 C 1450 800, 1420 740, 1480 680" stroke="#06284a" stroke-width="70" opacity=".55"/>
+      <path class="current" d="M1600 900 C 1450 800, 1420 740, 1480 680" stroke="#8fd0ff" stroke-width="3" opacity=".35"/>
+    </g>
+    <g fill="none" stroke="#fff" stroke-linecap="round" opacity=".16">
+      <path d="M100 700 q30 -8 60 0 t60 0" stroke-width="3"/><path d="M380 760 q40 -10 80 0 t80 0" stroke-width="3"/>
+      <path d="M200 840 q60 -14 120 0 t120 0" stroke-width="4"/><path d="M640 820 q50 -12 100 0 t100 0" stroke-width="4"/>
+    </g>
+  </svg></div>
+</div>
+
+<!-- ================= 上方：章節名稱與進度 ================= -->
+<header id="top">
+  <div class="brand"><span class="globe"></span>認識我們的星球</div>
+  <div class="where"><span class="ch serif" id="chLabel">Chapter 1</span><span class="tt" id="chTitle">序章</span></div>
+  <div id="segs" role="navigation" aria-label="章節進度"></div>
+  <div id="count"><b id="cNow">1</b> / <span id="cAll">21</span></div>
+  <button id="tocBtn" aria-controls="toc">☰ 章節</button>
+</header>
+
+<!-- ================= 右側：章節快速導覽 ================= -->
+<nav id="toc" aria-label="章節快速導覽"><h4>章節導覽</h4><ol id="tocList"></ol></nav>
+
+<!-- ================= 中間：投影片 ================= -->
+<main id="stage"><div id="deck">
+
+<!-- 1 封面 -->
+<section class="slide cover" data-ch="0" data-title="封面">
+  <p class="kicker"><span class="en">Earth &amp; Nature</span>地球與自然 Wiki · 入門教學</p>
+  <h1>認識我們的星球</h1>
+  <p class="lead" style="max-width:760px;">從水、空氣、冰、海洋到珊瑚礁——<br>8 個章節、21 張投影片，看懂地球是怎麼運作的。</p>
+  <div class="chips stagger">
+    <span class="chip" style="--c:var(--s2)"><i></i>岩石圈</span>
+    <span class="chip" style="--c:var(--s1)"><i></i>水圈</span>
+    <span class="chip" style="--c:var(--s7)"><i></i>大氣圈</span>
+    <span class="chip" style="--c:var(--s3)"><i></i>生物圈</span>
+    <span class="chip" style="--c:var(--ice)"><i></i>冰凍圈</span>
+  </div>
+  <div class="cta-row"><button class="cta" data-go="1">開始探索 →</button><span class="small">右側可跳到任一章節 · 按 F 全螢幕</span></div>
+  <div class="src">資料來源：本專案 wiki（整理自 NOAA、NASA、USGS、NSIDC 等公開資料）</div>
+</section>
+
+<!-- 2 學習目標 -->
+<section class="slide" data-ch="0" data-title="學習目標">
+  <p class="kicker"><span class="en">Before we start</span>開始之前</p>
+  <h2>看完這份簡報，你可以回答……</h2>
+  <div class="g3 stagger" style="margin-top:6px;">
+    <div class="card"><h3>① 地球由什麼組成？</h3><p>認識「五大圈層」，知道它們如何互相影響。</p></div>
+    <div class="card"><h3>② 水和碳怎麼流動？</h3><p>理解水循環與碳循環——地球最重要的兩條「搬運線」。</p></div>
+    <div class="card"><h3>③ 地球為什麼不冷不熱？</h3><p>溫室效應的原理，以及為什麼現在變得太熱。</p></div>
+    <div class="card"><h3>④ 海洋在做什麼？</h3><p>洋流如何搬運熱量，海洋又為我們付出了什麼代價。</p></div>
+    <div class="card"><h3>⑤ 冰融化會怎樣？</h3><p>冰川、海冰、永凍土與海平面上升的關係。</p></div>
+    <div class="card"><h3>⑥ 和台灣有什麼關係？</h3><p>黑潮、梅雨與台灣的珊瑚礁。</p></div>
+  </div>
+</section>
+
+<!-- 3 五大圈層 -->
+<section class="slide" data-ch="1" data-title="五大圈層">
+  <p class="kicker"><span class="en">The Earth System</span>地球是一個系統</p>
+  <h2>地球可以分成五個「圈層」</h2>
+  <p class="lead">科學家把地球看成五個互相連動的部分。任何一個改變，都會牽動其他四個。</p>
+  <div class="g5 stagger">
+    <div class="card sphere" style="--c:var(--s2)"><h3>岩石圈</h3><div class="en">geosphere</div><p>地殼與地函上部。板塊移動造出山脈、火山與地震。</p></div>
+    <div class="card sphere" style="--c:var(--s1)"><h3>水圈</h3><div class="en">hydrosphere</div><p>海洋、河流、湖泊、地下水。地球的水約 97% 在海裡。</p></div>
+    <div class="card sphere" style="--c:var(--s7)"><h3>大氣圈</h3><div class="en">atmosphere</div><p>包圍地球的空氣。天氣、氣候與溫室效應都在這裡發生。</p></div>
+    <div class="card sphere" style="--c:var(--s3)"><h3>生物圈</h3><div class="en">biosphere</div><p>所有生命。本簡報以珊瑚礁為代表。</p></div>
+    <div class="card sphere" style="--c:var(--ice)"><h3>冰凍圈</h3><div class="en">cryosphere</div><p>冰川、冰蓋、海冰、永凍土。</p></div>
+  </div>
+  <div class="remember">五個圈層靠「循環」與「輸送帶」連在一起——這是理解地球的鑰匙。</div>
+  <div class="src">Wiki：總綜述</div>
+</section>
+
+<!-- 4 板塊構造 -->
+<section class="slide" data-ch="1" data-title="板塊構造">
+  <p class="kicker"><span class="en">Geosphere</span>岩石圈</p>
+  <h2>地表像一塊碎裂的蛋殼，而且會動</h2>
+  <div class="split wl">
+    <div>
+      <p>地球最外層的<b>岩石圈</b>（地殼＋上部地函）裂成十幾塊大板塊，浮在高溫的地函上，<b>平均每年移動約 1.5 公分</b>——慢到一輩子也察覺不到，但累積上億年就能讓大陸分合。</p>
+      <p>板塊交界處最「熱鬧」：</p>
+      <ul>
+        <li><b>張裂型</b>：兩塊分開，岩漿湧出形成新海底（例：大西洋中洋脊）</li>
+        <li><b>聚合型</b>：兩塊相撞，擠出山脈或沉入海溝，伴隨火山（例：環太平洋火山帶）</li>
+        <li><b>錯動型</b>：兩塊側向擦過，常有地震（例：聖安德烈斯斷層）</li>
+      </ul>
+    </div>
+    <div class="col stagger">
+      <div class="card stat"><span class="num">1.5<small>cm／年</small></span><span class="lbl">板塊平均移動速度<br>（加州沿岸可達近 5 cm／年）</span></div>
+      <div class="card stat"><span class="num">2.5<small>億年前</small></span><span class="lbl">陸地曾連成一整塊「盤古大陸」，所以南美東岸和非洲西岸還拼得起來</span></div>
+    </div>
+  </div>
+  <div class="remember" style="margin-top:14px;">地震、火山、高山與海溝，大多出現在板塊交界處。</div>
+  <div class="src">Wiki：板塊構造（來源：NOAA Ocean Exploration、NOAA National Ocean Service）</div>
+</section>
+
+<!-- 5 地球的水 -->
+<section class="slide" data-ch="2" data-title="地球的水">
+  <p class="kicker"><span class="en">Hydrosphere</span>水圈</p>
+  <h2>地球的水，能喝的少之又少</h2>
+  <div class="split wr">
+    <div class="col stagger">
+      <div class="card stat"><span class="num">約 97<small>%</small></span><span class="lbl">是鹹的海水（另有少量鹹水湖等）</span></div>
+      <div class="card stat"><span class="num">2.5<small>%</small></span><span class="lbl">才是淡水——而且大部分還拿不到</span></div>
+    </div>
+    <div class="card">
+      <h3>那 2.5% 的淡水都在哪裡？</h3>
+      <div class="legend"><span><i style="background:var(--s1)"></i>冰川、冰蓋、永久積雪</span><span><i style="background:var(--s2)"></i>地下水</span><span><i style="background:var(--s3)"></i>地表水與其他</span></div>
+      <div class="chart" id="chart-fresh"></div>
+      <p class="small" style="margin:10px 0 0;">人類最常取用的<b>湖泊、河流、濕地</b>，只佔全部淡水的<b>約 0.25%</b>。</p>
+      <details class="table"><summary>看數據表</summary>
+        <table><tr><th>淡水去處</th><th>佔全部淡水</th></tr><tr><td>冰川、冰蓋、永久積雪</td><td>68.7%</td></tr><tr><td>地下水</td><td>30.1%</td></tr><tr><td>地表水與其他（湖泊、土壤水分、大氣等）</td><td>1.2%</td></tr></table>
+      </details>
+    </div>
+  </div>
+  <div class="analogy" style="margin-top:14px;">如果地球所有的水是一桶 100 公升的水，淡水只有 2.5 公升，而其中能直接舀來用的河湖水，連一小湯匙都不到。</div>
+  <div class="src">Wiki：水循環（來源：NOAA 水循環、USGS 冰、雪與冰川）</div>
+</section>
+
+<!-- 6 水循環（互動） -->
+<section class="slide" data-ch="2" data-title="水循環（互動）">
+  <p class="kicker"><span class="en">Interactive</span>水圈 × 大氣圈 · 動手玩</p>
+  <h2>水循環：跟著一滴水去旅行</h2>
+  <div class="wc">
+    <div class="card wc-scene">
+      <svg id="wcSvg" viewBox="0 0 720 460" preserveAspectRatio="xMidYMid slice" role="img" aria-label="水循環示意圖：海洋蒸發、凝結成雲、降水到山上、經河流與地下水回到海洋">
+        <defs>
+          <linearGradient id="wc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f3f74"/><stop offset="1" stop-color="#6aa8d6"/></linearGradient>
+          <linearGradient id="wc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a7fc0"/><stop offset="1" stop-color="#08325c"/></linearGradient>
+          <linearGradient id="wc-land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f8a5f"/><stop offset="1" stop-color="#1d4a33"/></linearGradient>
+          <pattern id="wc-dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="2" fill="#8fd0ff" opacity=".55"/></pattern>
+        </defs>
+        <rect width="720" height="460" fill="url(#wc-sky)"/>
+        <circle class="sunglow" cx="86" cy="76" r="62" fill="#ffe9a8" opacity=".25"/>
+        <circle cx="86" cy="76" r="34" fill="#ffe9a8"/>
+        <!-- 海洋 -->
+        <path d="M0 300 Q 60 292 120 300 T 240 300 T 360 300 L 360 460 L 0 460Z" fill="url(#wc-sea)"/>
+        <!-- 陸地與山 -->
+        <path d="M318 460 L318 306 C 350 298, 390 298, 430 288 L 520 168 L 556 196 L 600 132 L 676 232 L 720 250 L 720 460Z" fill="url(#wc-land)"/>
+        <path d="M600 132 L 581 158 L 593 154 L 602 162 L 612 153 L 627 168Z" fill="#f1f8ff"/>
+        <path d="M520 168 L 506 186 L 516 183 L 524 189 L 532 181Z" fill="#f1f8ff" opacity=".9"/>
+        <!-- 地下水層 -->
+        <path d="M318 392 L720 392 L720 460 L318 460Z" fill="#163e5e"/>
+        <path d="M318 392 L720 392 L720 460 L318 460Z" fill="url(#wc-dots)"/>
+        <!-- 樹 -->
+        <rect x="382" y="262" width="7" height="34" fill="#4a3424"/>
+        <circle cx="385" cy="252" r="20" fill="#2f8a5a"/><circle cx="372" cy="264" r="13" fill="#2f8a5a"/><circle cx="398" cy="264" r="13" fill="#2f8a5a"/>
+        <!-- 河流 -->
+        <path d="M556 206 C 530 240, 500 252, 470 268 S 400 300, 336 304" fill="none" stroke="#4fa3e0" stroke-width="7" stroke-linecap="round"/>
+        <path class="flowline" d="M556 206 C 530 240, 500 252, 470 268 S 400 300, 336 304" fill="none" stroke="#d7f0ff" stroke-width="3" stroke-linecap="round"/>
+        <!-- 地下水流回海洋 -->
+        <path class="flowline" d="M690 428 L 330 428" fill="none" stroke="#8fd0ff" stroke-width="3" stroke-linecap="round"/>
+        <!-- 蒸發水氣 -->
+        <g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round">
+          <path class="vap" style="--dl:0s"   d="M60 292 q-8 -14 0 -28 t0 -28"/>
+          <path class="vap" style="--dl:.5s"  d="M120 292 q-8 -14 0 -28 t0 -28"/>
+          <path class="vap" style="--dl:1s"   d="M180 292 q-8 -14 0 -28 t0 -28"/>
+          <path class="vap" style="--dl:1.5s" d="M240 292 q-8 -14 0 -28 t0 -28"/>
+          <path class="vap" style="--dl:.8s"  d="M300 294 q-8 -14 0 -28 t0 -28"/>
+          <path class="vap" style="--dl:.3s"  d="M376 232 q-6 -12 0 -24 t0 -24" stroke="#c9f5d9"/>
+          <path class="vap" style="--dl:1.3s" d="M396 232 q-6 -12 0 -24 t0 -24" stroke="#c9f5d9"/>
+        </g>
+        <!-- 雲 -->
+        <g class="cloud" fill="#f4f8fc">
+          <ellipse cx="470" cy="86" rx="78" ry="30"/><ellipse cx="418" cy="96" rx="50" ry="22"/><ellipse cx="528" cy="96" rx="56" ry="22"/>
+          <ellipse cx="480" cy="62" rx="46" ry="30"/><ellipse cx="444" cy="72" rx="30" ry="22"/>
+        </g>
+        <!-- 凝結：小水滴聚集 -->
+        <g fill="#dff3ff">
+          <circle class="drop" style="--dl:0s;--dx:-70px;--dy:40px" cx="470" cy="84" r="4"/>
+          <circle class="drop" style="--dl:.4s;--dx:80px;--dy:50px" cx="470" cy="84" r="3.5"/>
+          <circle class="drop" style="--dl:.8s;--dx:-30px;--dy:70px" cx="470" cy="84" r="3"/>
+          <circle class="drop" style="--dl:1.2s;--dx:40px;--dy:80px" cx="470" cy="84" r="4"/>
+          <circle class="drop" style="--dl:.6s;--dx:-110px;--dy:30px" cx="470" cy="84" r="3"/>
+          <circle class="drop" style="--dl:1s;--dx:110px;--dy:30px" cx="470" cy="84" r="3.5"/>
+        </g>
+        <!-- 降水 -->
+        <g stroke="#cfe9ff" stroke-width="2.5" stroke-linecap="round">
+          <line class="rain" style="--dl:0s"   x1="420" y1="116" x2="414" y2="132"/>
+          <line class="rain" style="--dl:.3s"  x1="445" y1="118" x2="439" y2="134"/>
+          <line class="rain" style="--dl:.6s"  x1="470" y1="118" x2="464" y2="134"/>
+          <line class="rain" style="--dl:.15s" x1="495" y1="118" x2="489" y2="134"/>
+          <line class="rain" style="--dl:.45s" x1="520" y1="116" x2="514" y2="132"/>
+          <line class="rain" style="--dl:.75s" x1="545" y1="112" x2="539" y2="128"/>
+          <line class="rain" style="--dl:.2s"  x1="432" y1="126" x2="426" y2="142"/>
+          <line class="rain" style="--dl:.55s" x1="507" y1="126" x2="501" y2="142"/>
+        </g>
+        <!-- 入滲 -->
+        <g fill="#8fd0ff">
+          <circle class="inf" style="--dl:0s" cx="440" cy="310" r="4"/><circle class="inf" style="--dl:.6s" cx="500" cy="300" r="4"/>
+          <circle class="inf" style="--dl:1.2s" cx="620" cy="300" r="4"/><circle class="inf" style="--dl:.9s" cx="680" cy="300" r="4"/>
+        </g>
+        <!-- 標籤 -->
+        <g class="lab lab1"><text x="150" y="226" text-anchor="middle">蒸發</text><text class="heat" x="150" y="246" text-anchor="middle">吸熱</text><text x="386" y="186" text-anchor="middle">蒸散</text></g>
+        <g class="lab lab2"><text x="470" y="30" text-anchor="middle">凝結成雲</text><text class="heat" x="560" y="56" text-anchor="middle">放熱</text></g>
+        <g class="lab lab3"><text x="600" y="110" text-anchor="middle">降水</text></g>
+        <g class="lab lab4"><text x="430" y="252" text-anchor="middle">逕流</text><text x="560" y="382" text-anchor="middle">入滲 → 地下水</text><text x="170" y="350" text-anchor="middle">回到海洋</text></g>
+      </svg>
+    </div>
+    <div class="wc-side">
+      <div class="wc-steps">
+        <button class="wc-step" data-s="1"><span class="n">1</span>蒸發</button>
+        <button class="wc-step" data-s="2"><span class="n">2</span>凝結</button>
+        <button class="wc-step" data-s="3"><span class="n">3</span>降水</button>
+        <button class="wc-step" data-s="4"><span class="n">4</span>逕流與入滲</button>
+      </div>
+      <div class="card wc-info" id="wcInfo" aria-live="polite"></div>
+      <div class="wc-ctrl"><button id="wcPlay">▶ 自動播放</button><button id="wcReset">↺ 重來</button></div>
+    </div>
+  </div>
+  <div class="src">Wiki：水循環、冰川與冰蓋（來源：NOAA 水循環、USGS 冰、雪與冰川）</div>
+</section>
+
+<!-- 7 大氣分層 -->
+<section class="slide" data-ch="2" data-title="大氣分層">
+  <p class="kicker"><span class="en">Atmosphere</span>大氣圈</p>
+  <h2>頭頂上的空氣，其實分成五層</h2>
+  <div class="split wl">
+    <div class="col">
+      <p class="up-label">↑ 愈往上愈高</p>
+      <div class="layers stagger">
+        <div class="layer" style="--a:.16"><b>對流層</b><span>0–約 18 km</span>幾乎所有天氣都在這裡，愈高愈冷</div>
+        <div class="layer" style="--a:.24"><b>平流層</b><span>到約 50 km</span>臭氧生成放熱，愈高愈暖</div>
+        <div class="layer" style="--a:.32"><b>中氣層</b><span>50–85 km</span>流星在這裡燒掉</div>
+        <div class="layer" style="--a:.42"><b>增溫層</b><span>85–600 km</span>可達 2,000°C，卻因空氣稀薄而不覺得熱</div>
+        <div class="layer" style="--a:.54"><b>外氣層</b><span>600 km 以上</span>衛星在這裡繞地球</div>
+      </div>
+    </div>
+    <div class="col stagger">
+      <h3>空氣由什麼組成？</h3>
+      <div class="card stat"><span class="num">78<small>%</small></span><span class="lbl">氮氣</span></div>
+      <div class="card stat"><span class="num">21<small>%</small></span><span class="lbl">氧氣</span></div>
+      <div class="card stat"><span class="num">0.04<small>%</small></span><span class="lbl">二氧化碳——量極少，卻深深影響氣溫（下一頁）</span></div>
+    </div>
+  </div>
+  <div class="src">Wiki：大氣分層（來源：NOAA JetStream）</div>
+</section>
+
+<!-- 8 溫室效應 -->
+<section class="slide" data-ch="2" data-title="溫室效應">
+  <p class="kicker"><span class="en">Greenhouse Effect</span>大氣圈</p>
+  <h2>溫室效應：地球的棉被</h2>
+  <div class="split">
+    <div>
+      <p>太陽加熱地表，地表放出紅外線。大氣中的<b>溫室氣體</b>（水氣、二氧化碳、甲烷……）會攔下一部分熱，讓地球保持溫暖。</p>
+      <div class="flow" style="margin:12px 0 16px;">
+        <span class="node">☀️ 太陽光</span><span class="arr">→</span><span class="node">地表變暖</span><span class="arr">→</span><span class="node">放出紅外線</span><span class="arr">→</span><span class="node">溫室氣體攔住部分熱</span>
+      </div>
+      <p><b>它是好事，但要剛剛好：</b></p>
+      <ul>
+        <li>完全沒有：地表平均約 <b>−18°C</b>，冰天雪地</li>
+        <li>太多：像金星，地表約 <b>400°C</b></li>
+      </ul>
+    </div>
+    <div class="col stagger">
+      <div class="card stat"><span class="num">+1.19<small>°C</small></span><span class="lbl">2025 年全球氣溫，比 1951–1980 年平均高</span></div>
+      <div class="card stat"><span class="num">2024</span><span class="lbl">有紀錄以來最熱的一年；最熱的 10 年就是最近 10 年</span></div>
+      <div class="analogy">二氧化碳像控制棉被厚度的旋鈕：CO₂ 讓空氣變暖 → 暖空氣容納更多水氣 → 水氣再加厚棉被。</div>
+    </div>
+  </div>
+  <div class="src">Wiki：溫室效應（來源：NASA 碳循環、NASA GISTEMP）</div>
+</section>
+
+<!-- 9 碳循環 -->
+<section class="slide" data-ch="3" data-title="碳循環">
+  <p class="kicker"><span class="en">Carbon Cycle</span>跨圈層 · 碳循環</p>
+  <h2>碳循環：一快一慢兩條路</h2>
+  <div class="split stagger">
+    <div class="card">
+      <h3>🐢 慢碳循環（1–2 億年）</h3>
+      <div class="flow" style="margin:10px 0 12px;">
+        <span class="node">大氣 CO₂</span><span class="arr">→</span><span class="node">雨水溶解岩石</span><span class="arr">→</span><span class="node">海洋生物造殼</span><span class="arr">→</span><span class="node">沉積成石灰岩</span><span class="arr">→</span><span class="node">火山噴回大氣</span>
+      </div>
+      <p>像地球的<b>恆溫器</b>：太熱 → 下雨多 → 風化快 → 吸走更多 CO₂ → 降溫。<br>但要<b>數十萬年</b>才調得回來。</p>
+    </div>
+    <div class="card">
+      <h3>🐇 快碳循環（生物的一生）</h3>
+      <p>植物行光合作用吸收 CO₂；呼吸、分解、燃燒再把它放回去。</p>
+      <p>北半球植物春夏吸、秋冬放，大氣 CO₂ 每年規律起伏——就像<b>地球在呼吸</b>。</p>
+      <p style="margin-top:14px;"><b>人類做了什麼？</b>把地底累積數百萬年的碳（煤、石油、天然氣）在短短一兩百年內燒回大氣。</p>
+    </div>
+  </div>
+  <div class="remember" style="margin-top:16px;">地球的恆溫器很慢，人類排碳很快——這就是問題所在。</div>
+  <div class="src">Wiki：碳循環（來源：NASA Earth Observatory 碳循環）</div>
+</section>
+
+<!-- 10 CO2 曲線 -->
+<section class="slide" data-ch="3" data-title="CO₂ 濃度">
+  <p class="kicker"><span class="en">Carbon Dioxide</span>跨圈層 · 碳循環</p>
+  <h2>大氣中的二氧化碳，一路往上</h2>
+  <div class="split wl">
+    <div class="card" style="align-self:start;">
+      <p class="small" style="margin:0 0 6px;">夏威夷茂納羅亞觀測站 CO₂ 年平均濃度（ppm，百萬分之一）</p>
+      <div class="chart" id="chart-co2"></div>
+      <details class="table"><summary>看數據表</summary>
+        <table><tr><th>年份</th><th>CO₂（ppm）</th></tr>
+        <tr><td>1959</td><td>315.98</td></tr><tr><td>2019</td><td>411.65</td></tr><tr><td>2020</td><td>414.21</td></tr><tr><td>2021</td><td>416.41</td></tr><tr><td>2022</td><td>418.53</td></tr><tr><td>2023</td><td>421.08</td></tr><tr><td>2024</td><td>424.61</td></tr><tr><td>2025</td><td>427.35</td></tr></table>
+      </details>
+    </div>
+    <div class="col stagger">
+      <div class="card stat"><span class="num">427<small>ppm</small></span><span class="lbl">2025 年平均——約是 1750 年的 1.5 倍</span></div>
+      <div class="card stat"><span class="num">3.3<small>ppm／年</small></span><span class="lbl">2023、2024 年的年增量，是觀測紀錄最高</span></div>
+      <p class="small">註：1959 到 2019 年之間的年度數據未收錄於 wiki，圖中以虛線相連，不代表實際逐年變化。</p>
+    </div>
+  </div>
+  <div class="src">Wiki：碳循環（來源：NOAA Global Monitoring Laboratory、NASA）</div>
+</section>
+
+<!-- 11 洋流 -->
+<section class="slide" data-ch="4" data-title="洋流">
+  <p class="kicker"><span class="en">Ocean Currents</span>水圈</p>
+  <h2>洋流：海洋裡的大河</h2>
+  <div class="split stagger">
+    <div class="card">
+      <h3>表層洋流：風吹出來的</h3>
+      <ul>
+        <li>風推動海面約 <b>100 公尺</b>深的海水</li>
+        <li>地球自轉讓洋流偏轉（北半球向右、南半球向左）</li>
+        <li>結果在各大洋形成 <b>五個巨大的環流圈</b></li>
+      </ul>
+      <h3 style="margin-top:14px;">環流圈西側：又快又窄的暖流</h3>
+      <ul>
+        <li><b>墨西哥灣流</b>（大西洋）：平均時速約 6.4 km，讓西歐冬天比同緯度溫暖</li>
+        <li><b>黑潮</b>（太平洋）：快處每秒超過 2 公尺，流經台灣東部</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>深層洋流：鹹度和溫度推動的</h3>
+        <div class="flow" style="margin:10px 0;">
+          <span class="node">極區海水變冷</span><span class="arr">→</span><span class="node">結冰時把鹽留在海裡</span><span class="arr">→</span><span class="node">海水又冷又鹹又重</span><span class="arr">→</span><span class="node">沉到深海</span>
+        </div>
+        <p>這股下沉帶動全球的「<b>海洋輸送帶</b>」，繞全球一圈約 <b>1,000 年</b>。</p>
+      </div>
+      <div class="analogy">洋流就像地球的暖氣管線，把熱帶多餘的熱送到寒冷的高緯度。</div>
+    </div>
+  </div>
+  <div class="src">Wiki：洋流、墨西哥灣流、黑潮（來源：NOAA 洋流、NOAA 環流圈與灣流、日本氣象廳）</div>
+</section>
+
+<!-- 12 AMOC -->
+<section class="slide" data-ch="4" data-title="AMOC">
+  <p class="kicker"><span class="en">Still debated</span>水圈 · 科學仍在爭論的題目</p>
+  <h2>大西洋的「翻轉環流」會不會變慢？</h2>
+  <div class="split">
+    <div>
+      <p><b>AMOC</b>（大西洋經向翻轉環流）：溫暖鹹水在上層往北流，到北大西洋冷卻下沉，再從深層流回南方。</p>
+      <ul>
+        <li>它讓西北歐比同緯度地區溫暖 <b>4–10°C</b></li>
+        <li>2004 年起，科學家在北緯 26° 用一排浮標直接量測它</li>
+      </ul>
+      <h3 style="margin-top:16px;">歷史上真的「急煞車」過</h3>
+      <p>約 1.28 萬年前，大量冰川融水灌進北大西洋，AMOC 突然變弱，北半球可能在<b>十年內</b>回到接近冰期的寒冷（新仙女木期）。</p>
+    </div>
+    <div class="card" style="align-self:start;">
+      <h3>❓ 現在呢？意見分歧</h3>
+      <ul>
+        <li>有研究認為已經變弱約 15%</li>
+        <li>也有研究認為仍在自然變動範圍內</li>
+        <li>聯合國氣候報告（IPCC，2021）：本世紀<b>很可能減弱</b>，但 2100 年前崩潰「不在預期中」</li>
+      </ul>
+      <p class="small" style="margin-top:12px;">這是 wiki 中標示為「爭議」的主題：不同研究的結論差異很大，資料多來自維基百科整理，尚未核對原始論文。</p>
+    </div>
+  </div>
+  <div class="src">Wiki：大西洋經向翻轉環流、末次冰期（來源：NOAA、維基百科）</div>
+</section>
+
+<!-- 13 冰川與冰蓋 -->
+<section class="slide" data-ch="5" data-title="冰川與冰蓋">
+  <p class="kicker"><span class="en">Cryosphere</span>冰凍圈</p>
+  <h2>冰川與冰蓋：鎖住的淡水</h2>
+  <div class="split">
+    <div>
+      <p>降雪多於融雪時，積雪一年年被壓成冰，在重力下緩慢往低處流——這就是<b>冰川</b>。面積超過 5 萬 km² 的叫<b>冰蓋</b>，現在地球只剩兩個：</p>
+      <ul>
+        <li><b>南極冰蓋</b>：面積近 1,400 萬 km²，佔地球冰量約 90%</li>
+        <li><b>格陵蘭冰蓋</b>：約 170 萬 km²；自 1998 年起<b>每年都在流失冰</b></li>
+      </ul>
+      <p style="margin-top:12px;">冰蓋是淡水的最大倉庫，裡面的氣泡還保存了近百萬年的氣候紀錄。</p>
+    </div>
+    <div class="card" style="align-self:start;">
+      <h3>如果全部融化，海平面會上升多少？</h3>
+      <div class="chart" id="chart-ice"></div>
+      <details class="table"><summary>看數據表</summary>
+        <table><tr><th>冰體</th><th>全部融化 → 海平面上升</th></tr><tr><td>南極冰蓋</td><td>約 58 m</td></tr><tr><td>格陵蘭冰蓋</td><td>約 7.4 m</td></tr><tr><td>全部陸地冰</td><td>約 70 m</td></tr></table>
+      </details>
+      <p class="small" style="margin:8px 0 0;">比喻：58 公尺大約是 20 層樓高。（以一層約 3 公尺估算）</p>
+    </div>
+  </div>
+  <div class="src">Wiki：冰川與冰蓋、南極冰蓋、格陵蘭冰蓋（來源：NSIDC、USGS）</div>
+</section>
+
+<!-- 14 海冰與永凍土 -->
+<section class="slide" data-ch="5" data-title="海冰與永凍土">
+  <p class="kicker"><span class="en">Feedbacks</span>冰凍圈 · 回饋</p>
+  <h2>白色屋頂與凍住的碳庫</h2>
+  <div class="split stagger">
+    <div class="card">
+      <h3>海冰：地球的反光板</h3>
+      <div class="g3" style="gap:10px;margin:10px 0 12px;">
+        <div class="stat"><span class="num" style="font-size:40px;">6<small>%</small></span><span class="lbl">開闊海面反射的陽光</span></div>
+        <div class="stat"><span class="num" style="font-size:32px;white-space:nowrap;">50–70<small>%</small></span><span class="lbl">海冰</span></div>
+        <div class="stat"><span class="num" style="font-size:40px;">90<small>%</small></span><span class="lbl">覆雪的海冰（最多）</span></div>
+      </div>
+      <p>冰融化 → 深色海面吸更多熱 → 更多冰融化。這種「愈變愈多」的連鎖反應叫<b>正回饋</b>，讓極區成為暖化最敏感的地方。</p>
+    </div>
+    <div class="card">
+      <h3>永凍土：凍了上千年的土</h3>
+      <ul>
+        <li>連續兩年以上維持 0°C 以下的土壤或岩石</li>
+        <li>覆蓋北半球約 <b>25%</b> 的陸地（約 2,300 萬 km²）</li>
+        <li>裡面封存大量有機碳（約 1,672 十億公噸）</li>
+      </ul>
+      <p style="margin-top:10px;">一旦融化，會釋放二氧化碳與甲烷，讓暖化更嚴重——又是一個正回饋。</p>
+    </div>
+  </div>
+  <div class="remember" style="margin-top:16px;">冰少了，地球就更容易變熱；變熱了，冰又更少。</div>
+  <div class="src">Wiki：海冰、永凍土（來源：NSIDC、NASA 碳循環）</div>
+</section>
+
+<!-- 15 海平面上升 -->
+<section class="slide" data-ch="5" data-title="海平面上升">
+  <p class="kicker"><span class="en">Sea Level</span>水圈 × 冰凍圈</p>
+  <h2>海平面正在上升，而且愈升愈快</h2>
+  <div class="g3 stagger" style="margin-bottom:18px;">
+    <div class="card stat"><span class="num">115<small>mm</small></span><span class="lbl">1993 年以來，全球平均海平面累計上升</span></div>
+    <div class="card stat"><span class="num">2.0<small>mm／年</small></span><span class="lbl">1993 年的上升速度</span></div>
+    <div class="card stat"><span class="num">4.4<small>mm／年</small></span><span class="lbl">現在的上升速度——<b>大約翻倍</b></span></div>
+  </div>
+  <div class="split">
+    <div>
+      <h3>為什麼會上升？兩個原因</h3>
+      <ul>
+        <li><b>海水變暖膨脹</b>：海洋吸收了人為暖化多餘熱量的 90% 以上</li>
+        <li><b>陸地上的冰融化</b>流進海裡</li>
+      </ul>
+      <p class="small" style="margin-top:8px;">注意：浮在海上的海冰融化，幾乎不會讓海平面上升（就像杯中冰塊融化，水不會溢出）。</p>
+    </div>
+    <div>
+      <h3>放到更長的時間來看</h3>
+      <ul>
+        <li>約 2 萬年前冰期最冷時：比今天<b>低約 125 m</b></li>
+        <li>約 12.5 萬年前溫暖期：比今天高約 5.5 m</li>
+      </ul>
+      <p class="small" style="margin-top:8px;">科學家用潮位站與人造衛星（如 Jason、Sentinel-6）量測海平面。</p>
+    </div>
+  </div>
+  <div class="src">Wiki：海平面上升（來源：NASA 海平面變化入口網站、NOAA、維基百科）</div>
+</section>
+
+<!-- 16 末次冰期 -->
+<section class="slide" data-ch="5" data-title="末次冰期">
+  <p class="kicker"><span class="en">Deep Time</span>地球的過去</p>
+  <h2>回到上一次冰河時期</h2>
+  <p class="lead">地球的氣候本來就會變——但過去的變化通常要花上千年、萬年。</p>
+  <div class="timeline">
+    <div class="bar"><div class="fill"></div>
+      <span class="ev" style="left:8%;--k:0"></span>
+      <span class="ev" style="left:42%;--k:1"></span>
+      <span class="ev warm" style="left:64%;--k:2"></span>
+      <span class="ev" style="left:80%;--k:3"></span>
+      <span class="ev warm" style="left:93%;--k:4"></span>
+    </div>
+    <div class="tl-labels">
+      <div style="left:8%"><b>約 11.5 萬年前</b>末次冰期開始</div>
+      <div style="left:42%"><b>約 2.6–2 萬年前</b>冰盛期：比今天冷約 6°C，冰覆蓋 1/4 陸地，海平面低約 125 m</div>
+      <div style="left:64%"><b>約 1.46 萬年前</b>明顯回暖，海平面急升</div>
+      <div style="left:80%"><b>1.28–1.17 萬年前</b>新仙女木期：突然回冷</div>
+      <div class="last" style="left:93%"><b>約 1.17 萬年前</b>冰期結束，進入現在的全新世</div>
+    </div>
+  </div>
+  <div class="split stagger" style="flex:none;margin-top:4px;">
+    <div class="card"><h3>為什麼會有冰期？</h3><p>地球繞太陽的軌道週期性改變，讓北半球日照變少；CO₂ 跟著下降，再把降溫放大。</p></div>
+    <div class="card"><h3>和台灣有關嗎？</h3><p>有！4.4 萬到 1 萬多年前，台灣高山曾多次出現冰川。</p></div>
+  </div>
+  <div class="src">Wiki：末次冰期（來源：維基百科、USGS、NASA 碳循環）</div>
+</section>
+
+<!-- 17 珊瑚礁 -->
+<section class="slide" data-ch="6" data-title="珊瑚礁">
+  <p class="kicker"><span class="en">Biosphere</span>生物圈</p>
+  <h2>珊瑚礁：海洋中的雨林</h2>
+  <div class="split">
+    <div>
+      <p>珊瑚是<b>動物</b>（和水母是親戚）。一群群小小的珊瑚蟲分泌碳酸鈣骨骼，經過數千年堆成珊瑚礁。</p>
+      <p><b>秘密夥伴：共生藻</b><br>珊瑚體內住著會行光合作用的藻類，最多把 <b>90%</b> 的養分分給珊瑚；珊瑚則提供住所。珊瑚的顏色也來自它們。</p>
+      <p><b>它需要：</b>23–29°C 的溫暖海水、清澈、陽光照得到（多在 30 m 內）——所以主要分布在南北緯 35° 之間。</p>
+    </div>
+    <div class="col stagger">
+      <div class="g3" style="grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="card stat"><span class="num">25<small>%</small></span><span class="lbl">的海洋魚類仰賴健康的珊瑚礁</span></div>
+        <div class="card stat"><span class="num">5<small>億人以上</small></span><span class="lbl">依賴珊瑚礁取得食物、收入與海岸保護</span></div>
+      </div>
+      <div class="card"><h3>三種珊瑚礁</h3><p><b>裙礁</b>貼著海岸長 → <b>堡礁</b>和陸地隔著潟湖 → <b>環礁</b>：火山島沉沒後，只剩一圈礁和中央潟湖。</p></div>
+    </div>
+  </div>
+  <div class="src">Wiki：珊瑚礁（來源：NOAA 珊瑚教學、NOAA 珊瑚礁生態系）</div>
+</section>
+
+<!-- 18 白化與酸化 -->
+<section class="slide" data-ch="6" data-title="白化與酸化">
+  <p class="kicker"><span class="en">Threats</span>生物圈 × 水圈</p>
+  <h2>珊瑚礁的兩大威脅：白化與酸化</h2>
+  <div class="split stagger">
+    <div class="card">
+      <h3>白化：海水太熱，夥伴離開</h3>
+      <p style="margin:4px 0 8px;">珊瑚受熱逆境時會排出共生藻而變白。白化的珊瑚還沒死，但太久就會餓死。</p>
+      <p class="small" style="margin:0 0 4px;">全球白化事件：承受白化等級熱壓力的珊瑚礁面積比例</p>
+      <div class="chart" id="chart-bleach"></div>
+      <details class="table"><summary>看數據表</summary>
+        <table><tr><th>全球白化事件</th><th>珊瑚礁面積比例</th></tr><tr><td>第一次 1998</td><td>無統計</td></tr><tr><td>第二次 2010</td><td>無統計</td></tr><tr><td>第三次 2014–2017</td><td>68.2%</td></tr><tr><td>第四次 2023–2025</td><td>約 84.4%</td></tr></table>
+      </details>
+    </div>
+    <div class="card">
+      <h3>酸化：海洋吸碳的代價</h3>
+      <p style="margin:4px 0 12px;">海洋吸收了約 30% 的人為 CO₂。CO₂ 溶進海水變成碳酸，讓珊瑚、貝類更難造出骨骼和殼。</p>
+      <div class="flow" style="margin-bottom:14px;">
+        <span class="node">工業革命前</span><span class="arr">→ pH 降 0.1 →</span><span class="node">現在 約 8.1</span><span class="arr">→ 若排放照舊 →</span><span class="node">2100 年 約 7.8</span>
+      </div>
+      <p class="small">pH 下降 0.1 看起來很小，但因為是對數尺度，酸度其實增加了約 30%。海水仍是鹼性，「酸化」指的是往酸的方向移動。</p>
+    </div>
+  </div>
+  <div class="src">Wiki：珊瑚礁、海洋酸化、2014–2017 與 2023–2025 全球白化事件（來源：NOAA Coral Reef Watch、NOAA 海洋酸化）</div>
+</section>
+
+<!-- 19 台灣視角 -->
+<section class="slide" data-ch="7" data-title="台灣視角">
+  <p class="kicker"><span class="en">Closer to home</span>回到我們身邊</p>
+  <h2>台灣在地球系統中的位置</h2>
+  <div class="g3 stagger">
+    <div class="card" style="border-top:6px solid var(--s1);">
+      <h3>🌊 黑潮</h3>
+      <p>從菲律賓東方北上、流經台灣東部的強大暖流。海水營養少、看起來深藍近黑而得名。帶來豐富的洄游魚類，也提供大量熱與水氣。</p>
+    </div>
+    <div class="card" style="border-top:6px solid var(--s7);">
+      <h3>🌧️ 季風與梅雨</h3>
+      <p>冬天吹東北季風，夏天吹來暖濕空氣。5–6 月冷暖空氣在台灣附近對峙，形成滯留鋒面，帶來梅雨——平均 <b>5 月 17 日</b>入梅。</p>
+    </div>
+    <div class="card" style="border-top:6px solid var(--s3);">
+      <h3>🪸 珊瑚礁</h3>
+      <p>台灣海域約有 500 多種造礁珊瑚，墾丁的軟珊瑚多達 212 種。溫暖的黑潮讓珊瑚能生長在這個緯度。</p>
+    </div>
+  </div>
+  <p class="small" style="margin-top:20px;">wiki 中台灣相關資料仍偏少：台灣年雨量、梅雨與颱風各佔多少、珊瑚白化監測等，仍是待補的知識缺口。</p>
+  <div class="src">Wiki：黑潮、東亞季風與梅雨、台灣的珊瑚礁（來源：日本氣象廳、維基百科、台灣新聞與海保署資料集）</div>
+</section>
+
+<!-- 20 總結 -->
+<section class="slide" data-ch="7" data-title="總結">
+  <p class="kicker"><span class="en">Summary</span>總結</p>
+  <h2>把一切串起來：六個重點</h2>
+  <div class="g3 stagger" style="gap:16px;">
+    <div class="card"><h3>1 · 地球是一個系統</h3><p>五大圈層靠循環與輸送帶緊密相連。</p></div>
+    <div class="card"><h3>2 · 水與碳是主角</h3><p>水循環搬運水與熱；碳循環決定大氣有多少溫室氣體。</p></div>
+    <div class="card"><h3>3 · 恆溫器很慢</h3><p>地球自我調節要數十萬年；人類排碳卻只花了一兩百年。</p></div>
+    <div class="card"><h3>4 · 回饋會放大變化</h3><p>冰變少、永凍土融化、水氣增加，都讓暖化「愈滾愈大」。</p></div>
+    <div class="card"><h3>5 · 海洋是緩衝器</h3><p>吸收了大量熱與碳，代價是酸化、海平面上升與珊瑚白化。</p></div>
+    <div class="card"><h3>6 · 洋流能讓氣候急轉彎</h3><p>歷史上 AMOC 變弱曾讓北半球十年內變冷。</p></div>
+  </div>
+</section>
+
+<!-- 21 想一想 -->
+<section class="slide" data-ch="7" data-title="課後練習">
+  <p class="kicker"><span class="en">Think about it</span>課後練習</p>
+  <h2>想一想，再點開看提示</h2>
+  <div class="quiz stagger">
+    <details><summary><span class="q">Q1</span>為什麼海冰融化幾乎不會讓海平面上升，但南極冰蓋融化會？</summary><p>海冰本來就浮在海上；冰蓋在陸地上，融水是「新加進」海裡的水。</p></details>
+    <details><summary><span class="q">Q2</span>沒有溫室效應的地球會是什麼樣子？為什麼「太多」也不行？</summary><p>地表平均約 −18°C；太多則會像金星，約 400°C。</p></details>
+    <details><summary><span class="q">Q3</span>「正回饋」是什麼意思？舉一個冰凍圈的例子。</summary><p>結果反過來強化原因，例如冰融 → 深色海面吸熱更多 → 冰融更多。</p></details>
+    <details><summary><span class="q">Q4</span>海洋幫我們吸收了 CO₂，這為什麼對珊瑚礁是壞消息？</summary><p>CO₂ 讓海水酸化，珊瑚難以建造碳酸鈣骨骼。</p></details>
+    <details><summary><span class="q">Q5</span>黑潮對台灣有哪些影響？</summary><p>帶來溫暖海水、水氣與洄游魚群，也讓珊瑚能生長。</p></details>
+  </div>
+  <div class="src">本簡報內容皆整理自「地球與自然 Wiki」（2026-11-22）；標示「比喻」者為輔助理解的近似說法，背景圖為示意插畫。</div>
+</section>
+
+</div></main>
+
+<!-- ================= 下方：上一頁／下一頁 ================= -->
+<footer id="bottom">
+  <button class="navbtn prev" id="prev" aria-label="上一頁"><span class="arrow">‹</span><span><small>上一頁</small><span class="t" id="prevT"></span></span></button>
+  <div id="keys"><kbd>←</kbd> <kbd>→</kbd> 換頁　<kbd>F</kbd> 全螢幕</div>
+  <button class="navbtn next" id="next" aria-label="下一頁"><span class="arrow">›</span><span><small>下一頁</small><span class="t" id="nextT"></span></span></button>
+</footer>
+
+<div id="flash" aria-hidden="true"><div class="box"><small class="serif" id="flashNo"></small><b id="flashName"></b><div class="bar"></div></div></div>
+
+<script>
+(() => {
+  const CH = [
+    { name: '序章', en: 'Prologue' },
+    { name: '地球是一個系統', en: 'The Earth System' },
+    { name: '水與空氣', en: 'Water & Air' },
+    { name: '碳的旅程', en: 'Carbon' },
+    { name: '流動的海洋', en: 'Oceans' },
+    { name: '冰的世界', en: 'Ice' },
+    { name: '珊瑚礁', en: 'Coral Reefs' },
+    { name: '台灣與總結', en: 'Taiwan & Review' },
+  ];
+  const $ = s => document.querySelector(s);
+  const slides = [...document.querySelectorAll('.slide')];
+  const bgs = [...document.querySelectorAll('.bg')];
+  const deck = $('#deck');
+  const chOf = k => +slides[k].dataset.ch;
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs = {}, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+  // 固定亂數，讓每次打開的畫面一致
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const rr = (a, b) => a + rnd() * (b - a);
+
+  /* ---------- 背景：程式產生的元素 ---------- */
+  document.querySelectorAll('.stars').forEach(g => {
+    for (let k = 0; k < +g.dataset.n; k++) {
+      const c = el('circle', { cx: rr(0, 1600).toFixed(1), cy: rr(0, 900).toFixed(1), r: rr(.4, 1.7).toFixed(2), fill: '#fff', opacity: rr(.2, .9).toFixed(2) }, g);
+      if (k % 5 === 0) { c.setAttribute('class', 'twinkle'); c.style.animationDelay = `-${rr(0, 4).toFixed(2)}s`; }
+    }
+  });
+  document.querySelectorAll('.forest').forEach(g => {
+    const layers = [
+      { base: 560, amp: 38, f: .004, ph: 0, col: '#4f8a7a', h: [26, 46] },
+      { base: 650, amp: 34, f: .006, ph: 1.3, col: '#2c6450', h: [40, 70] },
+      { base: 750, amp: 28, f: .005, ph: 2.1, col: '#163f31', h: [62, 110] },
+      { base: 860, amp: 18, f: .007, ph: .4, col: '#0a2219', h: [100, 170] },
+    ];
+    layers.forEach((L, li) => {
+      const y = x => L.base + L.amp * Math.sin(x * L.f + L.ph) + L.amp * .4 * Math.sin(x * L.f * 2.7 + L.ph * 2);
+      let d = `M0 ${y(0).toFixed(1)}`;
+      for (let x = 20; x <= 1600; x += 20) d += ` L${x} ${y(x).toFixed(1)}`;
+      d += ' L1600 900 L0 900Z';
+      let trees = '';
+      for (let x = rr(-10, 20); x < 1620; x += rr(L.h[0] * .35, L.h[0] * .9)) {
+        const h = rr(L.h[0], L.h[1]), w = h * .42, b = y(x) + 4;
+        trees += `M${x.toFixed(1)} ${(b - h).toFixed(1)} L${(x - w * .3).toFixed(1)} ${(b - h * .55).toFixed(1)} L${(x - w * .17).toFixed(1)} ${(b - h * .55).toFixed(1)} L${(x - w * .5).toFixed(1)} ${b.toFixed(1)} L${(x + w * .5).toFixed(1)} ${b.toFixed(1)} L${(x + w * .17).toFixed(1)} ${(b - h * .55).toFixed(1)} L${(x + w * .3).toFixed(1)} ${(b - h * .55).toFixed(1)}Z `;
+      }
+      el('path', { d: trees, fill: L.col }, g);
+      el('path', { d, fill: L.col }, g);
+      if (li < 3) el('rect', { x: 0, y: L.base - 40, width: 1600, height: 110, fill: 'url(#fo-mist)' }, g);
+    });
+  });
+  document.querySelectorAll('.bubbles').forEach(g => {
+    for (let k = 0; k < +g.dataset.n; k++) {
+      const c = el('circle', { cx: rr(0, 1600).toFixed(1), cy: rr(880, 960).toFixed(1), r: rr(1.5, 6).toFixed(1), fill: 'none', stroke: g.dataset.col, 'stroke-width': 1.2, class: 'bub' }, g);
+      c.style.animationDuration = `${rr(14, 30).toFixed(1)}s`; c.style.animationDelay = `-${rr(0, 30).toFixed(1)}s`;
+    }
+  });
+  document.querySelectorAll('.snowfall').forEach(g => {
+    for (let k = 0; k < +g.dataset.n; k++) {
+      const c = el('circle', { cx: rr(-60, 1600).toFixed(1), cy: 0, r: rr(1, 3).toFixed(1), fill: '#fff', opacity: rr(.35, .85).toFixed(2), class: 'snow' }, g);
+      c.style.animationDuration = `${rr(14, 28).toFixed(1)}s`; c.style.animationDelay = `-${rr(0, 28).toFixed(1)}s`;
+    }
+  });
+
+  /* ---------- 進場動畫的順序 ---------- */
+  slides.forEach(s => {
+    let i = 0;
+    const walk = parent => [...parent.children].forEach(c => {
+      if (c.classList.contains('stagger')) { walk(c); return; }
+      if (c.classList.contains('src')) { c.classList.add('rv'); c.style.setProperty('--i', 8); return; }
+      c.classList.add('rv'); c.style.setProperty('--i', Math.min(i++, 10));
+    });
+    walk(s);
+  });
+
+  /* ---------- 進度條與章節導覽 ---------- */
+  const segs = $('#segs'), tocList = $('#tocList');
+  const firstOf = c => slides.findIndex(s => +s.dataset.ch === c);
+  CH.forEach((c, ci) => {
+    const idx = slides.map((s, k) => k).filter(k => chOf(k) === ci);
+    const seg = document.createElement('button');
+    seg.className = 'seg'; seg.style.setProperty('--n', idx.length); seg.title = `${ci + 1}. ${c.name}`;
+    seg.setAttribute('aria-label', `跳到第 ${ci + 1} 章：${c.name}`);
+    seg.innerHTML = '<i></i>'; seg.onclick = () => show(idx[0]);
+    segs.appendChild(seg);
+    const li = document.createElement('li');
+    li.innerHTML = `<button class="chb"><span class="no serif">${String(ci + 1).padStart(2, '0')}</span><span>${c.name}</span></button><ul class="subs">${idx.map(k => `<li><button class="sb" data-k="${k}">${slides[k].dataset.title}</button></li>`).join('')}</ul>`;
+    li.querySelector('.chb').onclick = () => { show(idx[0]); document.body.classList.remove('toc-open'); };
+    li.querySelectorAll('.sb').forEach(b => b.onclick = () => { show(+b.dataset.k); document.body.classList.remove('toc-open'); });
+    tocList.appendChild(li);
+  });
+  $('#cAll').textContent = slides.length;
+  $('#tocBtn').onclick = () => document.body.classList.toggle('toc-open');
+
+  /* ---------- 換頁 ---------- */
+  const flash = $('#flash');
+  function playFlash(ci) {
+    $('#flashNo').textContent = `Chapter ${ci + 1} · ${CH[ci].en}`;
+    $('#flashName').textContent = CH[ci].name;
+    flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+  }
+  let cur = -1;
+  function show(k) {
+    k = Math.max(0, Math.min(slides.length - 1, k));
+    if (k === cur) return;
+    const ch = chOf(k), prevCh = cur >= 0 ? chOf(cur) : -1;
+    const chChanged = ch !== prevCh;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    deck.style.setProperty('--d0', chChanged && prevCh >= 0 && !reduce ? '780ms' : '120ms');
+    slides.forEach((s, j) => s.classList.toggle('active', j === k));
+    bgs.forEach((b, j) => b.classList.toggle('on', j === ch));
+    if (chChanged && prevCh >= 0 && k !== 0) playFlash(ch);
+    document.body.classList.toggle('is-cover', k === 0);
+    $('#chLabel').textContent = `Chapter ${ch + 1} · ${CH[ch].en}`;
+    $('#chTitle').textContent = `${CH[ch].name}　|　${slides[k].dataset.title}`;
+    $('#cNow').textContent = k + 1;
+    [...segs.children].forEach((s, ci) => {
+      const idx = slides.map((_, j) => j).filter(j => chOf(j) === ci);
+      const pct = ci < ch ? 100 : ci > ch ? 0 : (idx.indexOf(k) + 1) / idx.length * 100;
+      s.firstChild.style.width = pct + '%';
+    });
+    [...tocList.children].forEach((li, ci) => li.classList.toggle('on', ci === ch));
+    tocList.querySelectorAll('.sb').forEach(b => b.classList.toggle('on', +b.dataset.k === k));
+    $('#prev').disabled = k === 0; $('#next').disabled = k === slides.length - 1;
+    $('#prevT').textContent = k > 0 ? slides[k - 1].dataset.title : '—';
+    $('#nextT').textContent = k < slides.length - 1 ? slides[k + 1].dataset.title : '最後一頁';
+    history.replaceState(null, '', `#${k + 1}`);
+    document.title = `${slides[k].dataset.title} · 認識我們的星球`;
+    cur = k;
+  }
+
+  function fit() {
+    const st = $('#stage').getBoundingClientRect();
+    deck.style.setProperty('--scale', Math.min((st.width - 40) / 1200, (st.height - 10) / 660));
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', () => { const n = parseInt(location.hash.slice(1), 10); if (Number.isFinite(n)) show(n - 1); });
+  document.addEventListener('keydown', e => {
+    const onBtn = e.target.closest && e.target.closest('button, summary, details');
+    if ((e.key === ' ' || e.key === 'Enter') && onBtn) return;
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.();
+    } else if (slides[cur].querySelector('#wcSvg') && /^[1-4]$/.test(e.key)) wcSet(+e.key);
+  });
+  $('#prev').onclick = () => show(cur - 1);
+  $('#next').onclick = () => show(cur + 1);
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(+b.dataset.go));
+  let tx = null;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 60) show(cur + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  /* ---------- 互動水循環 ---------- */
+  const WC = [
+    { t: '跟著一滴水去旅行', p: '按右上方的步驟（或鍵盤 1–4），看水怎麼在海洋、天空與陸地之間搬家。', f: '課本常把它畫成「蒸發 → 凝結 → 降水」的圓圈，但真實的水循環比這複雜得多，水在生態系中的路徑至今仍未完全了解。' },
+    { t: '① 蒸發與蒸散', p: '液態水吸收太陽等能量，變成看不見的<b>水氣</b>升上天空。植物從根吸進的水，大部分也會從葉片蒸發出去，叫做<b>蒸散</b>。冰甚至能直接變成水氣（昇華）。', f: '蒸發會吸熱——水把熱量一起帶上了天空。' },
+    { t: '② 凝結成雲', p: '空氣裡的水氣，超過那個溫度能容納的量時，就凝成無數小水滴，聚成<b>雲</b>或<b>露</b>。', f: '凝結會放熱，所以水循環同時也在幫地球搬運能量。' },
+    { t: '③ 降水', p: '雲裡的水落回地面，成為雨或雪。高山上的積雪若年年堆積、被壓實，就可能成為冰川，把水儲存數百年。', f: '空氣愈暖，能容納的水氣愈多：兩次下雨的間隔變長，但一下就下得更猛。' },
+    { t: '④ 逕流與入滲', p: '落地的水一部分在地表匯成河流、流回大海（<b>逕流</b>）；一部分滲進土壤，往下補充<b>地下水</b>（入滲），再慢慢流向河流與海洋。', f: '地下水補充得很慢，用得比補得快就會耗竭。' },
+  ];
+  const wcSvg = $('#wcSvg'), wcInfo = $('#wcInfo'), wcBtns = [...document.querySelectorAll('.wc-step')];
+  let wcTimer = null;
+  function wcSet(n) {
+    wcSvg.setAttribute('class', [1, 2, 3, 4].filter(k => k <= n).map(k => `on${k}`).concat(n ? [`cur${n}`] : []).join(' '));
+    wcBtns.forEach(b => { const s = +b.dataset.s; b.classList.toggle('on', s === n); b.classList.toggle('done', s < n); b.setAttribute('aria-pressed', s === n); });
+    const d = WC[n];
+    wcInfo.innerHTML = `<h3>${d.t}</h3><p>${d.p}</p><div class="fact">${d.f}</div>`;
+    wcInfo.classList.remove('swap'); void wcInfo.offsetWidth; wcInfo.classList.add('swap');
+  }
+  function wcStop() { clearInterval(wcTimer); wcTimer = null; $('#wcPlay').textContent = '▶ 自動播放'; }
+  wcBtns.forEach(b => b.onclick = () => { wcStop(); wcSet(+b.dataset.s); });
+  $('#wcReset').onclick = () => { wcStop(); wcSet(0); };
+  $('#wcPlay').onclick = () => {
+    if (wcTimer) { wcStop(); return; }
+    let n = 1; wcSet(n); $('#wcPlay').textContent = '⏸ 暫停';
+    wcTimer = setInterval(() => { n++; if (n > 4) { wcStop(); return; } wcSet(n); }, 4200);
+  };
+  wcSet(0);
+
+  /* ---------- 圖表 ---------- */
+  const txt = (parent, x, y, s, cls, anchor = 'start') => { const t = el('text', { x, y, class: cls, 'text-anchor': anchor }, parent); t.textContent = s; return t; };
+  function tipFor(container) {
+    const t = document.createElement('div'); t.className = 'tip'; container.appendChild(t);
+    return {
+      show(html, x, y) {
+        t.innerHTML = html; t.style.opacity = 1;
+        const w = t.offsetWidth, cw = container.clientWidth;
+        t.style.left = Math.min(Math.max(0, x - w / 2), cw - w) + 'px';
+        t.style.top = (y - t.offsetHeight - 12) + 'px';
+      },
+      hide() { t.style.opacity = 0; }
+    };
+  }
+
+  // 1. 淡水去處（堆疊長條）
+  (function () {
+    const c = $('#chart-fresh');
+    const W = 600, H = 110, y = 16, h = 46, gap = 2;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '淡水去處：冰 68.7%、地下水 30.1%、地表水與其他 1.2%' }, c);
+    const data = [
+      { k: '冰川、冰蓋、永久積雪', v: 68.7, c: 'var(--s1)' },
+      { k: '地下水', v: 30.1, c: 'var(--s2)' },
+      { k: '地表水與其他', v: 1.2, c: 'var(--s3)' },
+    ];
+    const tip = tipFor(c);
+    let x = 0;
+    data.forEach((d, k) => {
+      const w = W * d.v / 100 - (k < data.length - 1 ? gap : 0);
+      const r = el('rect', { x, y, width: Math.max(w, 3), height: h, fill: d.c, rx: 4, class: 'gx' }, svg);
+      r.style.setProperty('--k', k);
+      const hit = el('rect', { x, y: y - 6, width: Math.max(w, 16), height: h + 12, fill: 'transparent' }, svg);
+      hit.addEventListener('mousemove', e => { const b = c.getBoundingClientRect(); tip.show(`${d.k}<br><b>${d.v}%</b> 的淡水`, (e.clientX - b.left) * c.clientWidth / b.width, y * c.clientWidth / W); });
+      hit.addEventListener('mouseleave', tip.hide);
+      if (d.v > 10) txt(svg, x + 12, y + h / 2 + 6, `${d.v}%`, 'dlabel', 'start').setAttribute('style', 'fill:#fff');
+      x += W * d.v / 100;
+    });
+    txt(svg, W, y + h + 26, '地表水與其他 1.2% ↑', 'dlabel2', 'end');
+  })();
+
+  // 2. CO₂ 折線
+  (function () {
+    const c = $('#chart-co2');
+    const data = [[1959, 315.98], [2019, 411.65], [2020, 414.21], [2021, 416.41], [2022, 418.53], [2023, 421.08], [2024, 424.61], [2025, 427.35]];
+    const W = 680, H = 360, L = 48, R = 20, T = 16, B = 34;
+    const xmin = 1950, xmax = 2030, ymin = 260, ymax = 440;
+    const X = v => L + (v - xmin) / (xmax - xmin) * (W - L - R);
+    const Y = v => T + (ymax - v) / (ymax - ymin) * (H - T - B);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'CO₂ 年平均濃度：1959 年 315.98 ppm，2025 年 427.35 ppm' }, c);
+    for (let v = 280; v <= 440; v += 40) {
+      el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: 'gridline' }, svg);
+      txt(svg, L - 8, Y(v) + 4, v, 'tick', 'end');
+    }
+    el('line', { x1: L, x2: W - R, y1: H - B, y2: H - B, class: 'baseline' }, svg);
+    [1960, 1980, 2000, 2020].forEach(v => txt(svg, X(v), H - B + 20, v, 'tick', 'middle'));
+    el('line', { x1: L, x2: W - R, y1: Y(280), y2: Y(280), stroke: 'var(--ink-2)', 'stroke-width': 1.5, 'stroke-dasharray': '6 5' }, svg);
+    txt(svg, L + 8, Y(280) - 8, '工業化前約 280 ppm', 'dlabel2');
+    el('line', { x1: X(1959), y1: Y(315.98), x2: X(2019), y2: Y(411.65), stroke: 'var(--s1)', 'stroke-width': 2, 'stroke-dasharray': '3 6', opacity: .8 }, svg);
+    const pts = data.slice(1).map(([a, b]) => `${X(a)},${Y(b)}`).join(' ');
+    el('polyline', { points: pts, fill: 'none', stroke: 'var(--s1)', 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', class: 'draw' }, svg);
+    { const poly = svg.lastChild, len = poly.getTotalLength(); poly.style.strokeDasharray = len; poly.style.setProperty('--len', len); }
+    data.forEach(([a, b]) => el('circle', { cx: X(a), cy: Y(b), r: 4, fill: 'var(--s1)', stroke: '#0b2038', 'stroke-width': 2 }, svg));
+    txt(svg, X(1959) + 8, Y(315.98) + 22, '1959 · 316', 'dlabel2');
+    txt(svg, X(2025) - 6, Y(427.35) - 12, '2025 · 427', 'dlabel', 'end');
+    const tip = tipFor(c);
+    const cross = el('line', { y1: T, y2: H - B, stroke: 'var(--axis)', 'stroke-width': 1, opacity: 0 }, svg);
+    const hover = el('circle', { r: 6, fill: 'var(--s1)', stroke: '#fff', 'stroke-width': 2, opacity: 0 }, svg);
+    const area = el('rect', { x: L, y: T, width: W - L - R, height: H - T - B, fill: 'transparent' }, svg);
+    area.addEventListener('mousemove', e => {
+      const b = svg.getBoundingClientRect();
+      const sx = (e.clientX - b.left) * W / b.width;
+      let best = data[0];
+      data.forEach(d => { if (Math.abs(X(d[0]) - sx) < Math.abs(X(best[0]) - sx)) best = d; });
+      cross.setAttribute('x1', X(best[0])); cross.setAttribute('x2', X(best[0])); cross.setAttribute('opacity', 1);
+      hover.setAttribute('cx', X(best[0])); hover.setAttribute('cy', Y(best[1])); hover.setAttribute('opacity', 1);
+      const k = c.clientWidth / W;
+      tip.show(`${best[0]} 年<br><b>${best[1].toFixed(2)} ppm</b>`, X(best[0]) * k, Y(best[1]) * k);
+    });
+    area.addEventListener('mouseleave', () => { tip.hide(); cross.setAttribute('opacity', 0); hover.setAttribute('opacity', 0); });
+  })();
+
+  // 3. 冰蓋融化 → 海平面
+  (function () {
+    const c = $('#chart-ice');
+    const data = [['南極冰蓋', 58], ['格陵蘭冰蓋', 7.4], ['全部陸地冰', 70]];
+    const W = 560, H = 170, L = 110, R = 70, rowH = 48, bh = 26;
+    const X = v => L + v / 80 * (W - L - R);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '全部融化後海平面上升：南極約 58 公尺、格陵蘭約 7.4 公尺、全部陸地冰約 70 公尺' }, c);
+    [0, 20, 40, 60, 80].forEach(v => { el('line', { x1: X(v), x2: X(v), y1: 6, y2: H - 24, class: 'gridline' }, svg); txt(svg, X(v), H - 6, v + ' m', 'tick', 'middle'); });
+    el('line', { x1: X(0), x2: X(0), y1: 6, y2: H - 24, class: 'baseline' }, svg);
+    const tip = tipFor(c);
+    data.forEach(([k, v], j) => {
+      const y = 12 + j * rowH;
+      txt(svg, L - 10, y + bh / 2 + 5, k, 'dlabel2', 'end');
+      const g = el('g', { class: 'gx' }, svg); g.style.setProperty('--k', j);
+      el('rect', { x: X(0), y, width: X(v) - X(0), height: bh, rx: 4, fill: 'var(--s1)' }, g);
+      el('rect', { x: X(0), y, width: Math.min(6, X(v) - X(0)), height: bh, fill: 'var(--s1)' }, g);
+      txt(svg, X(v) + 8, y + bh / 2 + 5, `約 ${v} m`, 'dlabel');
+      const hit = el('rect', { x: X(0), y: y - 8, width: W - L - R + 60, height: bh + 16, fill: 'transparent' }, svg);
+      hit.addEventListener('mousemove', () => { const k2 = c.clientWidth / W; tip.show(`${k}全部融化<br>海平面上升 <b>約 ${v} m</b>`, X(v) * k2, y * k2); });
+      hit.addEventListener('mouseleave', tip.hide);
+    });
+  })();
+
+  // 4. 全球白化事件
+  (function () {
+    const c = $('#chart-bleach');
+    const data = [['1998', '第一次', null], ['2010', '第二次', null], ['2014–17', '第三次', 68.2], ['2023–25', '第四次', 84.4]];
+    const W = 520, H = 220, L = 40, R = 10, T = 22, B = 44;
+    const Y = v => T + (100 - v) / 100 * (H - T - B);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '全球白化事件：第三次 68.2%、第四次約 84.4%，前兩次無統計' }, c);
+    [0, 50, 100].forEach(v => { el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: v ? 'gridline' : 'baseline' }, svg); txt(svg, L - 6, Y(v) + 4, v + '%', 'tick', 'end'); });
+    const band = (W - L - R) / data.length, bw = 64;
+    const tip = tipFor(c);
+    data.forEach(([yr, nth, v], j) => {
+      const cx = L + band * j + band / 2;
+      txt(svg, cx, H - B + 18, nth, 'dlabel2', 'middle');
+      txt(svg, cx, H - B + 34, yr, 'tick', 'middle');
+      if (v === null) { txt(svg, cx, Y(0) - 10, '無統計', 'tick', 'middle'); return; }
+      const g = el('g', { class: 'gy' }, svg); g.style.setProperty('--k', j - 2);
+      el('rect', { x: cx - bw / 2, y: Y(v), width: bw, height: Y(0) - Y(v), rx: 4, fill: 'var(--s3)' }, g);
+      el('rect', { x: cx - bw / 2, y: Y(0) - 6, width: bw, height: 6, fill: 'var(--s3)' }, g);
+      txt(svg, cx, Y(v) - 8, (j === 3 ? '約 ' : '') + v + '%', 'dlabel', 'middle');
+      const hit = el('rect', { x: cx - band / 2, y: T, width: band, height: H - T - B, fill: 'transparent' }, svg);
+      hit.addEventListener('mousemove', () => { const k = c.clientWidth / W; tip.show(`${nth}全球白化（${yr}）<br><b>${v}%</b> 珊瑚礁承受白化等級熱壓力`, cx * k, Y(v) * k); });
+      hit.addEventListener('mouseleave', tip.hide);
+    });
+  })();
+
+  fit();
+  const start = parseInt(location.hash.slice(1), 10);
+  show(Number.isFinite(start) ? start - 1 : 0);
+  requestAnimationFrame(fit);
+})();
+</script>
+</body>
+</html>
